@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMASH LAB // QUANTUM CORE v3.2 - Ultimate Badminton Advisory</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #020617; color: #f8fafc; font-family: 'Kanit', sans-serif; overflow-x: hidden; }
+        #cyberBg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
+        .cyber-glass { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(20px); border: 1px solid rgba(56, 189, 248, 0.2); box-shadow: 0 0 35px rgba(2, 6, 23, 0.8); }
+        .grid-bg { background-size: 40px 40px; background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px); }
+        .glow-cyan { box-shadow: 0 0 25px rgba(6, 182, 212, 0.3); }
+        ::-webkit-scrollbar { width: 5px; } ::-webkit-scrollbar-track { background: #020617; } ::-webkit-scrollbar-thumb { background: #06b6d4; border-radius: 10px; }
+    </style>
+</head>
+<body class="grid-bg min-h-screen relative selection:bg-cyan-500 selection:text-black">
+    <canvas id="cyberBg"></canvas>
+
+    <div class="relative z-20">
+        <!-- NAVBAR -->
+        <nav class="bg-slate-950/80 backdrop-blur-2xl border-b border-cyan-500/20 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('cover')">
+                    <div class="bg-gradient-to-tr from-cyan-500 via-emerald-400 to-teal-300 text-slate-950 p-2.5 rounded-xl shadow-lg shadow-cyan-500/30">
+                        <i class="fa-solid fa-atom text-2xl"></i>
+                    </div>
+                    <div>
+                        <div class="font-[Orbitron] font-black text-xl tracking-wider text-white">SMASH<span class="text-cyan-400">LAB</span></div>
+                        <div class="text-[9px] text-slate-400 font-mono tracking-widest uppercase">Quantum Sport AI & Audit System</div>
+                    </div>
+                </div>
+
+                <div class="hidden lg:flex items-center gap-1 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800">
+                    <button onclick="switchTab('cover')" id="tab-cover" class="px-4 py-2 rounded-xl text-xs font-semibold text-cyan-400 bg-cyan-500/10 border border-cyan-500/30"><i class="fa-solid fa-house mr-1.5"></i>หน้าปก (Cover)</button>
+                    <button onclick="switchTab('racket')" id="tab-racket" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white"><i class="fa-solid fa-brain mr-1.5 text-cyan-400"></i>วิเคราะห์ไม้แบด</button>
+                    <button onclick="switchTab('tension')" id="tab-tension" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white"><i class="fa-solid fa-bolt mr-1.5 text-amber-400"></i>คำนวณเอ็น</button>
+                    <button onclick="switchTab('shoes')" id="tab-shoes" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white"><i class="fa-solid fa-shoe-prints mr-1.5 text-emerald-400"></i>แปลงไซส์รองเท้า</button>
+                    <button onclick="switchTab('catalog')" id="tab-catalog" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white"><i class="fa-solid fa-database mr-1.5 text-purple-400"></i>คลังสินค้า</button>
+                    <button onclick="switchTab('saved')" id="tab-saved" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white"><i class="fa-solid fa-microchip mr-1.5 text-rose-400"></i>สเปกที่บันทึก</button>
+                    <button onclick="switchTab('admin')" id="tab-admin" class="hidden px-4 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-rose-500 to-pink-600 text-white shadow-lg"><i class="fa-solid fa-shield-halved mr-1.5"></i>ศูนย์หลังบ้าน (Logs)</button>
+                </div>
+
+                <div id="authSection"></div>
+            </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto px-4 py-8">
+            <!-- ================= SECTION 0: COVER / HERO SPLASH PAGE ================= -->
+            <div id="content-cover" class="space-y-12 py-6">
+                <!-- Main Cover Banner -->
+                <div class="cyber-glass p-8 md:p-16 rounded-3xl text-center space-y-8 relative overflow-hidden border border-cyan-500/30 glow-cyan">
+                    <div class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-cyan-950/90 border border-cyan-500/50 text-cyan-400 text-xs font-mono">
+                        <span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-ping"></span>
+                        SMASH LAB // QUANTUM CORE v3.2 ONLINE
+                    </div>
+
+                    <h1 class="text-4xl md:text-7xl font-black text-white leading-tight">
+                        ระบบวิเคราะห์อุปกรณ์แบดมินตัน <br>
+                        <span class="text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 via-teal-300 to-emerald-400 font-[Orbitron]">
+                            INTELLIGENCE ADVISORY
+                        </span>
+                    </h1>
+
+                    <p class="text-slate-300 text-base md:text-xl max-w-3xl mx-auto font-light leading-relaxed">
+                        ยกระดับประสิทธิภาพการตีด้วยระบบวิเคราะห์สเปกไม้แบดมินตัน 5 มิติ คำนวณความตึงเอ็นเซฟข้อศอก 
+                        และแปลงขนาดรองเท้าอัตโนมัติด้วยอัลกอริทึมไซเบอร์
+                    </p>
+
+                    <!-- Cover CTA Buttons -->
+                    <div class="flex flex-col sm:flex-row justify-center items-center gap-4 pt-4">
+                        <button onclick="enterSystemFromCover()" class="w-full sm:w-auto bg-gradient-to-r from-cyan-500 via-teal-400 to-emerald-400 text-slate-950 font-black text-lg px-10 py-4 rounded-2xl font-[Orbitron] shadow-xl shadow-cyan-500/30 hover:opacity-90 transition transform hover:-translate-y-1 flex items-center justify-center gap-3">
+                            <i class="fa-solid fa-rocket"></i> ENTER QUANTUM CORE
+                        </button>
+                        <button onclick="openAuthModal()" class="w-full sm:w-auto bg-slate-900/90 hover:bg-slate-800 text-cyan-400 border border-cyan-500/40 font-bold text-base px-8 py-4 rounded-2xl transition flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-user-shield"></i> เข้าสู่ระบบ / หลังบ้าน
+                        </button>
+                    </div>
+
+                    <!-- Live Stats Counters -->
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto pt-8 border-t border-slate-800/80">
+                        <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800">
+                            <div class="text-2xl font-black font-[Orbitron] text-cyan-400" id="coverTotalRackets">0</div>
+                            <div class="text-xs text-slate-400 mt-1">ไม้แบดในคลังข้อมูล</div>
+                        </div>
+                        <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800">
+                            <div class="text-2xl font-black font-[Orbitron] text-emerald-400">5-AXIS</div>
+                            <div class="text-xs text-slate-400 mt-1">เมทริกซ์เรดาร์วิเคราะห์</div>
+                        </div>
+                        <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800">
+                            <div class="text-2xl font-black font-[Orbitron] text-amber-400">AUTO</div>
+                            <div class="text-xs text-slate-400 mt-1">คำนวณเอ็น & ไซส์รองเท้า</div>
+                        </div>
+                        <div class="bg-slate-950/80 p-4 rounded-2xl border border-slate-800">
+                            <div class="text-2xl font-black font-[Orbitron] text-purple-400">AUDIT</div>
+                            <div class="text-xs text-slate-400 mt-1">ระบบ Log หลังบ้านเรียลไทม์</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Features Preview Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                    <div class="cyber-glass p-6 rounded-2xl space-y-3 border border-cyan-500/20">
+                        <div class="text-cyan-400 text-3xl"><i class="fa-solid fa-brain"></i></div>
+                        <h3 class="text-lg font-bold text-white">1. AI Racket Analyzer</h3>
+                        <p class="text-xs text-slate-400">วิเคราะห์ไม้แบดมินตันตามสไตล์การเล่น แรงข้อมือ และงบประมาณ ผ่านกราฟเรดาร์ 5 มิติ</p>
+                    </div>
+                    <div class="cyber-glass p-6 rounded-2xl space-y-3 border border-amber-500/20">
+                        <div class="text-amber-400 text-3xl"><i class="fa-solid fa-bolt"></i></div>
+                        <h3 class="text-lg font-bold text-white">2. String Tension HUD</h3>
+                        <p class="text-xs text-slate-400">คำนวณปอนด์เอ็นที่เหมาะสมกับทักษะ ป้องกันอาการบาดเจ็บข้อศอกและข้อมือ</p>
+                    </div>
+                    <div class="cyber-glass p-6 rounded-2xl space-y-3 border border-emerald-500/20">
+                        <div class="text-emerald-400 text-3xl"><i class="fa-solid fa-shoe-prints"></i></div>
+                        <h3 class="text-lg font-bold text-white">3. Shoe Size Matrix</h3>
+                        <p class="text-xs text-slate-400">คำนวณขนาดรองเท้าเผื่อถุงเท้าหนา (+0.5cm) และแนะนำทรงหน้าเท้ากว้าง</p>
+                    </div>
+                    <div class="cyber-glass p-6 rounded-2xl space-y-3 border border-rose-500/20">
+                        <div class="text-rose-400 text-3xl"><i class="fa-solid fa-shield-halved"></i></div>
+                        <h3 class="text-lg font-bold text-white">4. Admin Audit Trail</h3>
+                        <p class="text-xs text-slate-400">ระบบหลังบ้านติดตามทุกล็อกกิจกรรม (Activity Logs) แบบเรียลไทม์</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 1: RACKET ANALYZER -->
+            <div id="content-racket" class="hidden space-y-8">
+                <div class="cyber-glass p-8 md:p-12 rounded-3xl flex flex-col lg:flex-row items-center justify-between gap-8 border border-cyan-500/30">
+                    <div class="space-y-4 max-w-2xl">
+                        <span class="px-3 py-1 rounded-full bg-cyan-950 border border-cyan-500/40 text-cyan-400 text-xs font-mono"><i class="fa-solid fa-robot mr-1"></i> AI Advisory Engine Active</span>
+                        <h1 class="text-3xl md:text-5xl font-black text-white leading-tight">วิเคราะห์สเปกไม้แบดมินตัน <br><span class="text-cyan-400 font-[Orbitron]">SMASH LAB QUANTUM AI</span></h1>
+                        <p class="text-slate-300 text-sm">วิเคราะห์สไตล์การเล่น บาลานซ์ไม้ และเอ็นที่เหมาะสมด้วยอัลกอริทึมเรดาร์ 5 มิติ</p>
+                    </div>
+                    <div class="bg-slate-900/90 p-6 rounded-2xl border border-cyan-500/30 text-center min-w-[240px]">
+                        <div class="text-xs text-cyan-400 font-mono uppercase mb-1">Total Models in System</div>
+                        <div class="text-4xl font-black font-[Orbitron] text-white" id="totalDbRacketsCount">0</div>
+                    </div>
+                </div>
+
+                <div class="cyber-glass p-6 md:p-8 rounded-3xl space-y-6">
+                    <h3 class="text-xl font-bold text-white flex items-center gap-2 border-b border-slate-800 pb-4"><i class="fa-solid fa-sliders text-cyan-400"></i> เลือกสไตล์การเล่นของคุณ</h3>
+                    <form id="racketForm" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-xs font-mono text-cyan-400 mb-2">1. Playstyle Archetype (สไตล์การเล่น)</label>
+                            <select id="playstyle" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-sm text-slate-100">
+                                <option value="power">Power Smasher (สายบุกตบหนักดุดัน)</option>
+                                <option value="speed">Speed Drive (สายสปีด ดักทำลายจังหวะ)</option>
+                                <option value="control">Precision Control (สายคอนโทรล วางลูกแม่นยำ)</option>
+                                <option value="allround">Tactical All-Rounder (สายรอบด้าน สมดุลรุกและรับ)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-mono text-cyan-400 mb-2">2. Wrist Skill Level (ระดับแรงข้อมือ)</label>
+                            <select id="skill" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-sm text-slate-100">
+                                <option value="beginner">Beginner (มือใหม่ ต้องการไม้ช่วยส่งแรง)</option>
+                                <option value="intermediate">Intermediate (มือปานกลาง ตีถึงหลังคอร์ดได้)</option>
+                                <option value="advanced">Advanced (มือเก๋า/นักกีฬา แรงแขนดีมาก)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-mono text-cyan-400 mb-2">3. Match Type (ประเภทการเล่น)</label>
+                            <select id="matchType" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-sm text-slate-100">
+                                <option value="doubles">ประเภทคู่ (เน้นหน้าไม้ไว คล่องตัว)</option>
+                                <option value="singles">ประเภทเดี่ยว (เน้นวิ่งคุมพื้นที่)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-mono text-cyan-400 mb-2">4. Budget (งบประมาณ)</label>
+                            <select id="budget" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3.5 text-sm text-slate-100">
+                                <option value="budget">ประหยัด (ไม่เกิน 2,000 บาท)</option>
+                                <option value="mid">ระดับกลางคุ้มค่า (2,000 - 4,500 บาท)</option>
+                                <option value="high">ระดับท็อปแข่งขัน (4,500 บาทขึ้นไป)</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <button type="button" onclick="analyzeRacket()" class="w-full bg-gradient-to-r from-cyan-500 via-teal-400 to-emerald-400 text-slate-950 font-black py-4 rounded-xl font-[Orbitron] shadow-lg shadow-cyan-500/20">
+                                <i class="fa-solid fa-microchip mr-2"></i> EXECUTE QUANTUM ANALYSIS
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <div id="racketResult" class="hidden cyber-glass p-6 md:p-8 rounded-3xl space-y-6 border border-cyan-500/40">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                        <h3 class="text-xl font-bold text-white flex items-center gap-2"><i class="fa-solid fa-chart-pie text-cyan-400"></i> ผลการวิเคราะห์ไม้แบดมินตันของคุณ</h3>
+                        <button onclick="saveCurrentProfile()" class="bg-slate-800 text-cyan-400 px-4 py-2 rounded-xl text-xs font-bold"><i class="fa-solid fa-bookmark mr-1"></i> บันทึกสเปกนี้</button>
+                    </div>
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-center">
+                        <div class="lg:col-span-5 bg-slate-950 p-4 rounded-2xl border border-slate-800 flex justify-center">
+                            <div class="w-full max-w-[280px]"><canvas id="racketRadarChart"></canvas></div>
+                        </div>
+                        <div class="lg:col-span-7 grid grid-cols-2 gap-4" id="specDashboard"></div>
+                    </div>
+                    <div class="space-y-3 pt-4 border-t border-slate-800">
+                        <h4 class="text-sm font-bold text-slate-200">รุ่นไม้แนะนำที่ตรงกับคุณที่สุด:</h4>
+                        <div id="racketListCards" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SECTION 2: ADMIN BACKEND & LOGS -->
+            <div id="content-admin" class="hidden space-y-8">
+                <div class="cyber-glass p-6 md:p-8 rounded-3xl space-y-6 border border-rose-500/40">
+                    <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+                        <div>
+                            <h2 class="text-2xl font-black text-white">ศูนย์จัดการหลังบ้าน & ประวัติการใช้งาน (Admin Command Center)</h2>
+                            <p class="text-xs text-slate-400">ติดตามทุกการกระทำ ความเคลื่อนไหว และการจัดการข้อมูลในระบบ</p>
+                        </div>
+                        <span class="bg-rose-500/20 text-rose-300 text-xs px-3 py-1 rounded-full font-bold">ADMIN ROOT AUTHORIZED</span>
+                    </div>
+
+                    <!-- Add Racket Form -->
+                    <div class="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4">
+                        <h3 class="text-sm font-bold text-emerald-400"><i class="fa-solid fa-plus-circle mr-1"></i> เพิ่มไม้แบดรุ่นใหม่เข้าคลังข้อมูล</h3>
+                        <form id="addRacketForm" onsubmit="handleAddRacket(event)" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <input type="text" id="addBrand" required placeholder="แบรนด์ (เช่น Yonex)" class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white">
+                            <input type="text" id="addName" required placeholder="ชื่อรุ่น (เช่น Astrox 100ZZ)" class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white">
+                            <input type="text" id="addPrice" required placeholder="ราคา (เช่น 6,890 ฿)" class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white">
+                            <select id="addStyle" class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white">
+                                <option value="power">Power / Attack</option>
+                                <option value="speed">Speed / Drive</option>
+                                <option value="control">Control / Precision</option>
+                                <option value="allround">All-Around</option>
+                            </select>
+                            <input type="text" id="addBalance" required placeholder="บาลานซ์ (เช่น Head Heavy)" class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white">
+                            <input type="text" id="addFlex" required placeholder="ความแข็งก้าน (เช่น Extra Stiff)" class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white">
+                            <input type="text" id="addDesc" required placeholder="คำอธิบายสเปกเพิ่มเติม..." class="md:col-span-3 bg-slate-900 border border-slate-800 rounded-xl p-2.5 text-xs text-white">
+                            <button type="submit" class="md:col-span-3 bg-emerald-500 text-slate-950 font-bold py-2.5 rounded-xl text-xs">บันทึกข้อมูลลงระบบ</button>
+                        </form>
+                    </div>
+
+                    <!-- Manage Inventory Table -->
+                    <div class="space-y-3">
+                        <h3 class="text-sm font-bold text-white">รายการไม้แบดมินตันในระบบ</h3>
+                        <div class="overflow-x-auto rounded-2xl border border-slate-800">
+                            <table class="w-full text-left text-xs text-slate-300">
+                                <thead class="bg-slate-950 text-cyan-400">
+                                    <tr><th class="p-3">แบรนด์</th><th class="p-3">ชื่อรุ่น</th><th class="p-3">สไตล์</th><th class="p-3">ราคา</th><th class="p-3 text-right">จัดการ</th></tr>
+                                </thead>
+                                <tbody id="adminRacketTable" class="divide-y divide-slate-800 bg-slate-950/60"></tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- System Activity Logs Table -->
+                    <div class="space-y-3 pt-4 border-t border-slate-800">
+                        <div class="flex justify-between items-center">
+                            <h3 class="text-sm font-bold text-cyan-400 flex items-center gap-2">
+                                <i class="fa-solid fa-list-check"></i> ประวัติกิจกรรมในระบบเรียลไทม์ (System Activity Logs)
+                            </h3>
+                            <button onclick="clearActivityLogs()" class="text-[11px] text-rose-400 hover:text-rose-300 border border-rose-500/30 px-3 py-1 rounded-lg">
+                                <i class="fa-solid fa-trash mr-1"></i> ล้างประวัติ Log
+                            </button>
+                        </div>
+                        <div class="overflow-x-auto rounded-2xl border border-slate-800">
+                            <table class="w-full text-left text-xs text-slate-300">
+                                <thead class="bg-slate-950 text-amber-400 font-mono">
+                                    <tr>
+                                        <th class="p-3">เวลา (TIMESTAMP)</th>
+                                        <th class="p-3">ผู้ใช้งาน (USER)</th>
+                                        <th class="p-3">ประเภทกิจกรรม (ACTION)</th>
+                                        <th class="p-3">รายละเอียด (DETAILS)</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="adminLogsTable" class="divide-y divide-slate-800 bg-slate-950/80 font-mono">
+                                    <!-- JS Render Logs -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- OTHER SECTIONS -->
+            <div id="content-tension" class="hidden space-y-6">
+                <div class="cyber-glass p-6 md:p-8 rounded-3xl space-y-6">
+                    <h2 class="text-2xl font-bold text-white"><i class="fa-solid fa-bolt text-amber-400 mr-2"></i>คำนวณความตึงเอ็น (String Tension)</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <select id="tensionSkill" onchange="calcTension()" class="bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white">
+                            <option value="20-22">มือใหม่ (ใช้แรงแขนหลัก)</option>
+                            <option value="23-25">มือปานกลาง (ข้อมือแข็งแรง คุมทิศทางได้)</option>
+                            <option value="26-29">นักกีฬา / มือแข่ง (ข้อมือแข็งแรงมาก)</option>
+                        </select>
+                        <div class="bg-slate-950 p-6 rounded-2xl border border-amber-500/30 text-center">
+                            <span class="text-xs text-amber-400 font-mono">RECOMMENDED TENSION</span>
+                            <div id="lbsResult" class="text-4xl font-black text-white font-[Orbitron] my-2">20 - 22 LBS</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="content-shoes" class="hidden space-y-6">
+                <div class="cyber-glass p-6 md:p-8 rounded-3xl space-y-6">
+                    <h2 class="text-2xl font-bold text-white"><i class="fa-solid fa-shoe-prints text-emerald-400 mr-2"></i>แปลงขนาดไซส์รองเท้า</h2>
+                    <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800 space-y-3">
+                        <input type="number" id="shoeCm" placeholder="ความยาวเท้าจริง (CM) เช่น 26.5" class="w-full bg-slate-900 border border-slate-800 rounded-xl p-3 text-xs text-white">
+                        <button onclick="calcShoeSize()" class="w-full bg-emerald-500 text-slate-950 font-bold py-2.5 rounded-xl text-xs">คำนวณไซส์ (+0.5cm)</button>
+                        <div id="shoeSizeOut" class="hidden p-3 bg-slate-900 rounded-xl text-xs text-slate-300"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="content-catalog" class="hidden space-y-6"><div class="cyber-glass p-6 md:p-8 rounded-3xl"><h2 class="text-2xl font-bold text-white mb-4">คลังสินค้าทั้งหมด</h2><div id="catalogGrid" class="grid grid-cols-1 md:grid-cols-3 gap-4"></div></div></div>
+            <div id="content-saved" class="hidden space-y-6"><div class="cyber-glass p-6 md:p-8 rounded-3xl"><h2 class="text-2xl font-bold text-white mb-4">สเปกที่บันทึกไว้ในระบบ</h2><div id="savedProfilesGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div></div></div>
+        </main>
+    </div>
+
+    <!-- AUTH MODAL -->
+    <div id="authModal" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="cyber-glass p-8 rounded-3xl max-w-md w-full relative border border-cyan-500/40 space-y-4">
+            <button onclick="closeAuthModal()" class="absolute top-4 right-4 text-slate-400"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-2xl font-black text-white text-center font-[Orbitron]">LOGIN TO <span class="text-cyan-400">SMASH LAB</span></h3>
+            <form onsubmit="handleLogin(event)" class="space-y-3">
+                <input type="email" id="loginEmail" required placeholder="admin@smashlab.com" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white">
+                <input type="password" id="loginPassword" required placeholder="••••••••" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white">
+                <button type="submit" class="w-full bg-cyan-500 text-slate-950 font-black py-3 rounded-xl text-xs font-[Orbitron]">AUTHENTICATE</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // PARTICLES CANVAS
+        const canvas = document.getElementById('cyberBg'); const ctx = canvas.getContext('2d');
+        function resize() { canvas.width = window.innerWidth; canvas.height = window.innerHeight; }
+        window.addEventListener('resize', resize); resize();
+        let particles = Array.from({length: 40}, () => ({ x: Math.random()*canvas.width, y: Math.random()*canvas.height, vx: (Math.random()-0.5)*0.8, vy: (Math.random()-0.5)*0.8 }));
+        function anim() {
+            ctx.clearRect(0,0,canvas.width,canvas.height);
+            particles.forEach(p => {
+                p.x += p.vx; p.y += p.vy;
+                if(p.x<0||p.x>canvas.width) p.vx*=-1; if(p.y<0||p.y>canvas.height) p.vy*=-1;
+                ctx.fillStyle = 'rgba(6,182,212,0.4)'; ctx.beginPath(); ctx.arc(p.x,p.y,2,0,Math.PI*2); ctx.fill();
+            });
+            requestAnimationFrame(anim);
+        } anim();
+
+        // APP LOGIC & STATE
+        const initialRackets = [
+            { id: 1, brand: 'Yonex', name: 'Astrox 100 ZZ', price: '6,890 ฿', style: 'power', balance: 'Head Heavy', flex: 'Extra Stiff', desc: 'ตัวท็อปสายตบ ตบปักหนักแน่นสูงสุด' },
+            { id: 2, brand: 'Yonex', name: 'Nanoflare 1000 Z', price: '6,590 ฿', style: 'speed', balance: 'Head Light', flex: 'Extra Stiff', desc: 'หน้าไม้วิ่งไว สปีดสวิงเร็วที่สุด' },
+            { id: 3, brand: 'Victor', name: 'Thruster Ryuga II', price: '6,200 ฿', style: 'power', balance: 'Head Heavy', flex: 'Stiff', desc: 'สายบุกตบหนัก ก้านสะท้านน้อย' },
+            { id: 4, brand: 'Li-Ning', name: 'Halbertec 9000', price: '6,900 ฿', style: 'control', balance: 'Even Balance', flex: 'Medium-Stiff', desc: 'แม่นยำสูง วางลูกสั่งได้ดั่งใจ' }
+        ];
+        const initialUsers = [{ name: 'Admin Master', email: 'admin@smashlab.com', pass: 'admin123', role: 'admin' }];
+
+        function getRackets() { return JSON.parse(localStorage.getItem('rackets_db')) || initialRackets; }
+        function getUsers() { return JSON.parse(localStorage.getItem('users_db')) || initialUsers; }
+        function getCurrentUser() { return JSON.parse(localStorage.getItem('curr_user')) || null; }
+        function getLogs() { return JSON.parse(localStorage.getItem('logs_db')) || []; }
+
+        if(!localStorage.getItem('rackets_db')) localStorage.setItem('rackets_db', JSON.stringify(initialRackets));
+        if(!localStorage.getItem('users_db')) localStorage.setItem('users_db', JSON.stringify(initialUsers));
+
+        // AUDIT LOG SYSTEM ENGINE
+        function logActivity(actionType, details) {
+            const logs = getLogs();
+            const currentUser = getCurrentUser();
+            const newLog = {
+                id: Date.now(),
+                timestamp: new Date().toLocaleString('th-TH'),
+                user: currentUser ? `${currentUser.name} (${currentUser.role})` : 'Guest User',
+                action: actionType,
+                details: details
+            };
+            logs.unshift(newLog);
+            localStorage.setItem('logs_db', JSON.stringify(logs.slice(0, 100)));
+        }
+
+        function renderActivityLogs() {
+            const logs = getLogs();
+            const tbody = document.getElementById('adminLogsTable');
+            if (logs.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-500">ยังไม่มีประวัติกิจกรรมในระบบ</td></tr>`;
+                return;
+            }
+            tbody.innerHTML = logs.map(l => {
+                let badgeClass = "bg-slate-800 text-slate-300";
+                if(l.action.includes("LOGIN")) badgeClass = "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30";
+                if(l.action.includes("ENTER")) badgeClass = "bg-cyan-500/20 text-cyan-400 border border-cyan-500/30";
+                if(l.action.includes("PRODUCT")) badgeClass = "bg-amber-500/20 text-amber-400 border border-amber-500/30";
+
+                return `<tr>
+                    <td class="p-3 text-slate-400 text-[11px]">${l.timestamp}</td>
+                    <td class="p-3 font-bold text-white">${l.user}</td>
+                    <td class="p-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold ${badgeClass}">${l.action}</span></td>
+                    <td class="p-3 text-slate-300">${l.details}</td>
+                </tr>`;
+            }).join('');
+        }
+
+        function clearActivityLogs() {
+            if(confirm('ยืนยันการล้างประวัติ Log กิจกรรมทั้งหมดในระบบ?')) {
+                localStorage.removeItem('logs_db');
+                logActivity('CLEAR_LOGS', 'ผู้ดูแลระบบสั่งล้างประวัติการใช้งานทั้งหมด');
+                renderActivityLogs();
+            }
+        }
+
+        function enterSystemFromCover() {
+            logActivity('ENTER_SYSTEM', 'ผู้ใช้งานกดเริ่มต้นระบบจากหน้าปกแอปพลิเคชัน');
+            switchTab('racket');
+        }
+
+        function updateAuthUI() {
+            const user = getCurrentUser(); const authSec = document.getElementById('authSection');
+            const adminTab = document.getElementById('tab-admin');
+            if (user) {
+                authSec.innerHTML = `<div class="flex items-center gap-2"><span class="text-xs font-bold text-white">${user.name}</span><button onclick="handleLogout()" class="bg-slate-900 text-rose-400 p-2 rounded-xl text-xs"><i class="fa-solid fa-power-off"></i></button></div>`;
+                if(user.role === 'admin') adminTab.classList.remove('hidden'); else adminTab.classList.add('hidden');
+            } else {
+                authSec.innerHTML = `<button onclick="openAuthModal()" class="bg-cyan-500 text-slate-950 font-black px-4 py-2 rounded-xl text-xs font-[Orbitron]">LOGIN</button>`;
+                adminTab.classList.add('hidden');
+            }
+            const count = getRackets().length;
+            document.getElementById('totalDbRacketsCount').innerText = count;
+            document.getElementById('coverTotalRackets').innerText = count;
+        }
+
+        function openAuthModal() { document.getElementById('authModal').classList.remove('hidden'); }
+        function closeAuthModal() { document.getElementById('authModal').classList.add('hidden'); }
+        
+        function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value, pass = document.getElementById('loginPassword').value;
+            const found = getUsers().find(u => u.email === email && u.pass === pass);
+            if(found) {
+                localStorage.setItem('curr_user', JSON.stringify(found));
+                closeAuthModal();
+                updateAuthUI();
+                logActivity('AUTH_LOGIN', `เข้าสู่ระบบสำเร็จ (Role: ${found.role})`);
+            } else {
+                alert('อีเมลหรือรหัสผ่านไม่ถูกต้อง (Admin: admin@smashlab.com / admin123)');
+            }
+        }
+
+        function handleLogout() {
+            logActivity('AUTH_LOGOUT', 'ออกจากระบบ');
+            localStorage.removeItem('curr_user');
+            updateAuthUI();
+            switchTab('cover');
+        }
+
+        function switchTab(tab) {
+            ['cover','racket','admin','tension','shoes','catalog','saved'].forEach(t => {
+                const el = document.getElementById(`content-${t}`);
+                if(el) { if(t === tab) el.classList.remove('hidden'); else el.classList.add('hidden'); }
+            });
+            if(tab === 'admin') { renderAdminTable(); renderActivityLogs(); }
+            if(tab === 'catalog') renderCatalog();
+            if(tab === 'saved') renderSavedProfiles();
+        }
+
+        let radarChartInstance = null;
+        function analyzeRacket() {
+            const style = document.getElementById('playstyle').value;
+            const rackets = getRackets();
+            const ctxRadar = document.getElementById('racketRadarChart').getContext('2d');
+            if(radarChartInstance) radarChartInstance.destroy();
+
+            radarChartInstance = new Chart(ctxRadar, {
+                type: 'radar',
+                data: {
+                    labels: ['POWER', 'SPEED', 'CONTROL', 'STABILITY', 'DURABILITY'],
+                    datasets: [{ data: style==='power'?[95,65,75,85,90]:[75,95,80,85,80], backgroundColor: 'rgba(6, 182, 212, 0.25)', borderColor: '#06b6d4' }]
+                },
+                options: { scales: { r: { grid: { color: 'rgba(255,255,255,0.1)' }, ticks: { display: false }, suggestedMin: 0, suggestedMax: 100 } }, plugins: { legend: { display: false } } }
+            });
+
+            document.getElementById('specDashboard').innerHTML = `
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800"><span class="text-xs text-cyan-400 font-mono block">BALANCE</span><strong class="text-sm text-white">${style==='power'?'Head Heavy':'Head Light / Even'}</strong></div>
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800"><span class="text-xs text-emerald-400 font-mono block">FLEX</span><strong class="text-sm text-white">Stiff / Extra Stiff</strong></div>
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800"><span class="text-xs text-amber-400 font-mono block">WEIGHT</span><strong class="text-sm text-white">4U (80-84g)</strong></div>
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800"><span class="text-xs text-purple-400 font-mono block">TENSION</span><strong class="text-sm text-white">22 - 26 LBS</strong></div>
+            `;
+
+            const rec = rackets.filter(r => r.style === style || style === 'allround').slice(0,3);
+            document.getElementById('racketListCards').innerHTML = rec.map(r => `
+                <div class="bg-slate-950 p-4 rounded-xl border border-slate-800">
+                    <span class="text-[10px] text-cyan-400 font-mono font-bold">${r.brand}</span>
+                    <h5 class="text-sm font-bold text-white">${r.name}</h5>
+                    <p class="text-xs text-amber-400 font-bold mt-1">${r.price}</p>
+                    <p class="text-xs text-slate-400 mt-1">${r.desc}</p>
+                </div>
+            `).join('');
+
+            logActivity('RACKET_ANALYSIS', `ประมวลผลสเปกไม้แบดมินตัน สาย: ${style.toUpperCase()}`);
+            document.getElementById('racketResult').classList.remove('hidden');
+        }
+
+        function saveCurrentProfile() {
+            const user = getCurrentUser();
+            if(!user) { alert('กรุณาเข้าสู่ระบบก่อนเซฟสเปก'); openAuthModal(); return; }
+            logActivity('SAVE_SPEC', 'บันทึกสเปกไม้ส่วนตัวลงระบบ');
+            alert('บันทึกสเปกเรียบร้อย!');
+        }
+
+        function renderAdminTable() {
+            document.getElementById('adminRacketTable').innerHTML = getRackets().map(r => `
+                <tr><td class="p-3 font-bold text-cyan-400">${r.brand}</td><td class="p-3 text-white">${r.name}</td><td class="p-3 uppercase text-[10px]">${r.style}</td><td class="p-3 text-amber-400 font-bold">${r.price}</td><td class="p-3 text-right"><button onclick="deleteRacket(${r.id}, '${r.name}')" class="text-rose-400"><i class="fa-solid fa-trash"></i></button></td></tr>
+            `).join('');
+        }
+
+        function handleAddRacket(e) {
+            e.preventDefault();
+            let rackets = getRackets();
+            const brand = document.getElementById('addBrand').value;
+            const name = document.getElementById('addName').value;
+            rackets.push({ id: Date.now(), brand: brand, name: name, price: document.getElementById('addPrice').value, style: document.getElementById('addStyle').value, balance: document.getElementById('addBalance').value, flex: document.getElementById('addFlex').value, desc: document.getElementById('addDesc').value });
+            
+            localStorage.setItem('rackets_db', JSON.stringify(rackets));
+            logActivity('ADD_PRODUCT', `เพิ่มไม้แบดรุ่นใหม่: ${brand} ${name}`);
+            renderAdminTable(); 
+            document.getElementById('addRacketForm').reset(); 
+            updateAuthUI();
+            alert('เพิ่มสินค้าสำเร็จ!');
+        }
+
+        function deleteRacket(id, name) {
+            if(confirm(`ยืนยันการลบไม้แบดรุ่น ${name}?`)) {
+                localStorage.setItem('rackets_db', JSON.stringify(getRackets().filter(r => r.id !== id)));
+                logActivity('DELETE_PRODUCT', `ลบไม้แบดรุ่น: ${name}`);
+                renderAdminTable();
+                updateAuthUI();
+            }
+        }
+
+        function renderCatalog() {
+            document.getElementById('catalogGrid').innerHTML = getRackets().map(r => `
+                <div class="bg-slate-950 p-5 rounded-2xl border border-slate-800"><span class="text-[10px] text-cyan-400 font-mono font-bold">${r.brand}</span><h4 class="text-base font-bold text-white mt-1">${r.name}</h4><p class="text-xs text-amber-400 font-bold mt-1">${r.price}</p><p class="text-xs text-slate-400 mt-2">${r.desc}</p></div>
+            `).join('');
+        }
+
+        function calcTension() { 
+            const lbs = document.getElementById('tensionSkill').value;
+            document.getElementById('lbsResult').innerText = `${lbs} LBS`;
+            logActivity('CALC_TENSION', `คำนวณความตึงเอ็น: ${lbs} LBS`);
+        }
+
+        function calcShoeSize() {
+            const cm = parseFloat(document.getElementById('shoeCm').value);
+            if(cm) { 
+                document.getElementById('shoeSizeOut').innerHTML = `ไซส์ที่แนะนำ (+0.5cm): <strong>${cm+0.5} CM / ~${Math.round((cm+2)*1.5)} EU</strong>`; 
+                document.getElementById('shoeSizeOut').classList.remove('hidden'); 
+                logActivity('CALC_SHOES', `คำนวณขนาดไซส์รองเท้า: ความยาวเท้า ${cm} CM`);
+            }
+        }
+
+        updateAuthUI();
+    </script>
+</body>
+</html>

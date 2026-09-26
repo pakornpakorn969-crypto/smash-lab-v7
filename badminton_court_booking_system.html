@@ -1,0 +1,1388 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SmashZone Badminton Club - ระบบจองสนามแบดมินตันออนไลน์</title>
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        emerald: {
+                            450: '#10b981',
+                            550: '#059669',
+                            950: '#022c22'
+                        },
+                        slate: {
+                            850: '#0f172a',
+                            950: '#020617'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Kanit', 'Inter', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <!-- Google Fonts & FontAwesome Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Custom CSS Animations & UI Enhancements -->
+    <style>
+        body {
+            font-family: 'Kanit', sans-serif;
+            background-color: #020617;
+            color: #f8fafc;
+        }
+
+        .glass-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .glass-card-hover:hover {
+            border-color: rgba(16, 185, 129, 0.4);
+            box-shadow: 0 10px 30px -10px rgba(16, 185, 129, 0.2);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #34d399 0%, #10b981 50%, #059669 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .gradient-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            transition: all 0.25s ease;
+        }
+
+        .gradient-btn:hover {
+            background: linear-gradient(135deg, #34d399 0%, #10b981 100%);
+            box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #020617;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #10b981;
+        }
+
+        /* Pulse Animations */
+        @keyframes subtlePulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.85; transform: scale(1.02); }
+        }
+        .pulse-badge {
+            animation: subtlePulse 3s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between selection:bg-emerald-500 selection:text-white">
+
+    <!-- DEMO MODE ROLE SWITCHER BAR -->
+    <div class="bg-slate-900 border-b border-slate-800 text-xs py-2 px-4 sticky top-0 z-50 shadow-md">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-2">
+            <div class="flex items-center space-x-2 text-slate-400">
+                <span class="inline-block w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                <span class="font-medium text-slate-300"><i class="fa-solid fa-flask text-emerald-400 mr-1"></i> โหมดทดสอบระบบ (Demo Mode):</span>
+                <span class="hidden sm:inline text-slate-500">สลับสิทธิ์ผู้ใช้งานเพื่อทดลองฟีเจอร์ต่างๆ</span>
+            </div>
+            <div class="flex items-center space-x-1 sm:space-x-2 bg-slate-950 p-1 rounded-lg border border-slate-800">
+                <button onclick="setRole('GUEST')" id="role-guest-btn" class="role-btn px-2.5 py-1 rounded-md transition font-medium text-slate-300 hover:text-white">
+                    <i class="fa-solid fa-user-secret mr-1"></i> ผู้เยี่ยมชม
+                </button>
+                <button onclick="setRole('MEMBER')" id="role-member-btn" class="role-btn px-2.5 py-1 rounded-md transition font-medium text-slate-300 hover:text-white">
+                    <i class="fa-solid fa-user-check mr-1"></i> สมาชิก
+                </button>
+                <button onclick="setRole('ADMIN')" id="role-admin-btn" class="role-btn px-2.5 py-1 rounded-md transition font-medium text-slate-300 hover:text-white">
+                    <i class="fa-solid fa-shield-halved mr-1 text-indigo-400"></i> ผู้ดูแลระบบ (Admin)
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN NAVIGATION BAR -->
+    <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-9 z-40">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Brand Logo -->
+                <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('home')">
+                    <div class="w-11 h-11 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-400 flex items-center justify-center shadow-lg shadow-emerald-900/40 transform hover:rotate-6 transition">
+                        <i class="fa-solid fa-shuttlecock text-slate-950 text-2xl"></i>
+                    </div>
+                    <div>
+                        <span class="text-2xl font-bold tracking-tight text-white">Smash<span class="gradient-text">Zone</span></span>
+                        <span class="block text-[10px] tracking-widest text-emerald-400 font-semibold uppercase -mt-1">Badminton Club</span>
+                    </div>
+                </div>
+
+                <!-- Desktop Navigation Tabs -->
+                <nav class="hidden md:flex space-x-1 lg:space-x-2 bg-slate-950/60 p-1.5 rounded-xl border border-slate-800">
+                    <button onclick="switchTab('home')" id="tab-nav-home" class="nav-tab-btn flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition text-slate-300 hover:text-white">
+                        <i class="fa-solid fa-house"></i>
+                        <span>หน้าแรก & ประกาศ</span>
+                    </button>
+                    <button onclick="switchTab('booking')" id="tab-nav-booking" class="nav-tab-btn flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition text-slate-300 hover:text-white">
+                        <i class="fa-solid fa-calendar-plus text-emerald-400"></i>
+                        <span>จองสนามออนไลน์</span>
+                    </button>
+                    <button onclick="switchTab('my-bookings')" id="tab-nav-my-bookings" class="nav-tab-btn flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition text-slate-300 hover:text-white relative">
+                        <i class="fa-solid fa-receipt"></i>
+                        <span>ประวัติการจอง</span>
+                        <span id="booking-badge-count" class="bg-emerald-500 text-slate-950 text-[10px] font-bold px-1.5 py-0.5 rounded-full ml-1">0</span>
+                    </button>
+                    <button onclick="switchTab('admin')" id="tab-nav-admin" class="nav-tab-btn hidden flex items-center space-x-2 px-4 py-2 rounded-lg text-sm font-medium transition text-indigo-300 hover:text-white bg-indigo-950/40 border border-indigo-800/40">
+                        <i class="fa-solid fa-sliders text-indigo-400"></i>
+                        <span>แอดมินแดชบอร์ด</span>
+                    </button>
+                </nav>
+
+                <!-- Header Actions / User Status -->
+                <div class="flex items-center space-x-3">
+                    <div id="current-role-indicator" class="hidden sm:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-slate-800 border border-slate-700 text-xs">
+                        <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                        <span id="role-text-display" class="text-slate-300 font-medium">สิทธิ์: ผู้เยี่ยมชม</span>
+                    </div>
+                    <button onclick="switchTab('booking')" class="gradient-btn text-slate-950 font-bold px-4 py-2 rounded-xl text-sm shadow-md flex items-center space-x-1.5">
+                        <i class="fa-solid fa-bolt"></i>
+                        <span class="hidden sm:inline">จองด่วน</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Bottom/Sub Navigation Bar -->
+        <div class="md:hidden flex items-center justify-around bg-slate-950/95 border-t border-slate-800 py-2 px-2">
+            <button onclick="switchTab('home')" id="mobile-tab-home" class="mobile-nav-btn flex flex-col items-center text-xs py-1 px-3 rounded-lg text-slate-400">
+                <i class="fa-solid fa-house text-base mb-0.5"></i>
+                <span>หน้าแรก</span>
+            </button>
+            <button onclick="switchTab('booking')" id="mobile-tab-booking" class="mobile-nav-btn flex flex-col items-center text-xs py-1 px-3 rounded-lg text-emerald-400 font-semibold">
+                <i class="fa-solid fa-calendar-plus text-base mb-0.5"></i>
+                <span>จองสนาม</span>
+            </button>
+            <button onclick="switchTab('my-bookings')" id="mobile-tab-my-bookings" class="mobile-nav-btn flex flex-col items-center text-xs py-1 px-3 rounded-lg text-slate-400 relative">
+                <i class="fa-solid fa-receipt text-base mb-0.5"></i>
+                <span>ประวัติ</span>
+                <span id="mobile-badge-count" class="absolute top-0 right-2 bg-emerald-500 text-slate-950 text-[9px] font-bold px-1 rounded-full">0</span>
+            </button>
+            <button onclick="switchTab('admin')" id="mobile-tab-admin" class="mobile-nav-btn hidden flex flex-col items-center text-xs py-1 px-3 rounded-lg text-indigo-400">
+                <i class="fa-solid fa-sliders text-base mb-0.5"></i>
+                <span>แอดมิน</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- MAIN CONTAINER AREA -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+
+        <!-- ==================== TAB 1: HOME PAGE ==================== -->
+        <section id="view-home" class="tab-view space-y-8">
+            <!-- Hero Banner -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-r from-slate-900 via-slate-850 to-emerald-950 border border-slate-800 p-8 sm:p-12 shadow-2xl">
+                <!-- Background Graphic Overlay -->
+                <div class="absolute -right-10 -bottom-10 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute right-10 top-10 opacity-10 pointer-events-none hidden lg:block">
+                    <i class="fa-solid fa-shuttlecock text-[220px] text-emerald-400"></i>
+                </div>
+
+                <div class="relative z-10 max-w-2xl space-y-6">
+                    <div class="inline-flex items-center space-x-2 bg-emerald-950/80 border border-emerald-500/30 text-emerald-300 text-xs font-medium px-3.5 py-1.5 rounded-full pulse-badge">
+                        <i class="fa-solid fa-star text-amber-400"></i>
+                        <span>สนามมาตรฐาน BWF แห่งใหม่ ย่านบางนา-สุขุมวิท</span>
+                    </div>
+                    <h1 class="text-3xl sm:text-5xl font-extrabold text-white leading-tight tracking-tight">
+                        สัมผัสประสบการณ์ตีแบด <br><span class="gradient-text">ระดับพรีเมียม</span> ได้แล้ววันนี้
+                    </h1>
+                    <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+                        พื้นยางสังเคราะห์มาตรฐาน BWF ซับแรงกระแทกถนอมข้อเท้า ระบบไฟ LED แสงนวลสายตาไม่สะท้อน พร้อมห้องน้ำสะอาดติดแอร์ และบริการที่จอดรถฟรีกว่า 50 คัน
+                    </p>
+                    <div class="flex flex-wrap items-center gap-4 pt-2">
+                        <button onclick="switchTab('booking')" class="gradient-btn text-slate-950 font-bold px-7 py-3.5 rounded-2xl text-base shadow-lg shadow-emerald-950/50 flex items-center space-x-2">
+                            <i class="fa-solid fa-calendar-check"></i>
+                            <span>จองสนามออนไลน์ทันที</span>
+                        </button>
+                        <a href="#court-overview-section" class="bg-slate-800/80 hover:bg-slate-700 text-slate-200 font-medium px-6 py-3.5 rounded-2xl text-base border border-slate-700 transition flex items-center space-x-2">
+                            <i class="fa-solid fa-circle-info text-slate-400"></i>
+                            <span>ดูอัตราค่าบริการ</span>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Promotions & Announcements Banner -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <!-- Promo Code Card 1 -->
+                <div class="glass-card p-5 rounded-2xl border-l-4 border-l-emerald-500 flex items-center justify-between">
+                    <div class="space-y-1">
+                        <span class="text-xs font-bold text-emerald-400 uppercase tracking-wider">โปรโมชันสมาชิกใหม่</span>
+                        <h4 class="font-bold text-white text-base">รับส่วนลดทันที 20%</h4>
+                        <p class="text-xs text-slate-400">ใช้โค้ด: <code class="bg-slate-950 px-2 py-0.5 rounded text-emerald-300 font-mono font-bold">BAD20</code></p>
+                    </div>
+                    <button onclick="copyPromoCode('BAD20')" class="bg-emerald-950 border border-emerald-800/60 text-emerald-300 hover:bg-emerald-900 px-3 py-2 rounded-xl text-xs font-medium transition flex flex-col items-center">
+                        <i class="fa-regular fa-copy text-sm mb-1"></i>
+                        <span>คัดลอก</span>
+                    </button>
+                </div>
+
+                <!-- Promo Code Card 2 -->
+                <div class="glass-card p-5 rounded-2xl border-l-4 border-l-amber-500 flex items-center justify-between">
+                    <div class="space-y-1">
+                        <span class="text-xs font-bold text-amber-400 uppercase tracking-wider">ส่วนลดจองช่วงค่ำ</span>
+                        <h4 class="font-bold text-white text-base">ลดตรง 100 บาท</h4>
+                        <p class="text-xs text-slate-400">ใช้โค้ด: <code class="bg-slate-950 px-2 py-0.5 rounded text-amber-300 font-mono font-bold">SMASH100</code></p>
+                    </div>
+                    <button onclick="copyPromoCode('SMASH100')" class="bg-amber-950 border border-amber-800/60 text-amber-300 hover:bg-amber-900 px-3 py-2 rounded-xl text-xs font-medium transition flex flex-col items-center">
+                        <i class="fa-regular fa-copy text-sm mb-1"></i>
+                        <span>คัดลอก</span>
+                    </button>
+                </div>
+
+                <!-- Dynamic Live Announcement Container -->
+                <div class="glass-card p-5 rounded-2xl border-l-4 border-l-indigo-500 space-y-2">
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs font-bold text-indigo-400 uppercase tracking-wider flex items-center">
+                            <i class="fa-solid fa-bullhorn mr-1.5 animate-bounce"></i> ประกาศล่าสุดจากสโมสร
+                        </span>
+                        <span class="text-[10px] text-slate-400">อัปเดตเรียลไทม์</span>
+                    </div>
+                    <div id="home-live-announcements-list" class="space-y-1 text-xs text-slate-300">
+                        <!-- Dynamic announcements rendered via JS -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Court Overview Section -->
+            <div id="court-overview-section" class="space-y-6">
+                <div class="flex flex-wrap items-end justify-between gap-4 border-b border-slate-800 pb-4">
+                    <div>
+                        <h2 class="text-2xl font-bold text-white">สนามที่เปิดให้บริการ</h2>
+                        <p class="text-slate-400 text-sm">เลือกสนามที่ต้องการและตรวจสอบสถานะความพร้อมได้ทันที</p>
+                    </div>
+                    <div class="flex items-center space-x-4 text-xs">
+                        <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-1.5"></span> พร้อมใช้งาน</span>
+                        <span class="flex items-center"><span class="w-2.5 h-2.5 rounded-full bg-rose-500 mr-1.5"></span> ปิดปรับปรุง</span>
+                    </div>
+                </div>
+
+                <!-- Courts Grid -->
+                <div id="home-courts-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <!-- Dynamic Court Cards Rendered by JavaScript -->
+                </div>
+            </div>
+
+            <!-- Facility Highlights -->
+            <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 pt-4">
+                <div class="glass-card p-4 rounded-2xl text-center space-y-2">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-950 text-emerald-400 mx-auto flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-layer-group"></i>
+                    </div>
+                    <h5 class="text-sm font-bold text-white">พรมยางมาตรฐาน</h5>
+                    <p class="text-xs text-slate-400">ซับแรงกระแทก 5mm ป้องกันอาการบาดเจ็บ</p>
+                </div>
+                <div class="glass-card p-4 rounded-2xl text-center space-y-2">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-950 text-emerald-400 mx-auto flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-lightbulb"></i>
+                    </div>
+                    <h5 class="text-sm font-bold text-white">ไฟ LED BWF</h5>
+                    <p class="text-xs text-slate-400">สว่างทั่วถึง 500 Lux โดยไม่แยงตา</p>
+                </div>
+                <div class="glass-card p-4 rounded-2xl text-center space-y-2">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-950 text-emerald-400 mx-auto flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-snowflake"></i>
+                    </div>
+                    <h5 class="text-sm font-bold text-white">ห้องพักผ่อนแอร์</h5>
+                    <p class="text-xs text-slate-400">มีเครื่องดื่ม ผ้าเย็น และ WiFi ฟรี</p>
+                </div>
+                <div class="glass-card p-4 rounded-2xl text-center space-y-2">
+                    <div class="w-10 h-10 rounded-xl bg-emerald-950 text-emerald-400 mx-auto flex items-center justify-center text-lg">
+                        <i class="fa-solid fa-square-parking"></i>
+                    </div>
+                    <h5 class="text-sm font-bold text-white">ที่จอดรถกว้างขวาง</h5>
+                    <p class="text-xs text-slate-400">รองรับมากกว่า 50 คัน พร้อมกล้อง CCTV</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 2: BOOKING SYSTEM ==================== -->
+        <section id="view-booking" class="tab-view hidden space-y-8">
+            <div class="border-b border-slate-800 pb-4">
+                <h2 class="text-2xl font-bold text-white">ระบบจองสนามแบดมินตันออนไลน์</h2>
+                <p class="text-slate-400 text-sm">เลือกรอบสนาม วันที่ และช่วงเวลาที่คุณสะดวกได้ในไม่กี่คลิก</p>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left 2 Columns: Interactive Step Form -->
+                <div class="lg:col-span-2 space-y-6">
+                    
+                    <!-- STEP 1: Select Court -->
+                    <div class="glass-card p-6 rounded-2xl space-y-4">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 rounded-full bg-emerald-500 text-slate-950 font-bold flex items-center justify-center text-sm">1</span>
+                            <h3 class="text-lg font-bold text-white">เลือกสนามที่ต้องการ</h3>
+                        </div>
+                        <div id="booking-court-selector-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                            <!-- Dynamic selector buttons -->
+                        </div>
+                    </div>
+
+                    <!-- STEP 2: Select Date -->
+                    <div class="glass-card p-6 rounded-2xl space-y-4">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 rounded-full bg-emerald-500 text-slate-950 font-bold flex items-center justify-center text-sm">2</span>
+                            <h3 class="text-lg font-bold text-white">เลือกวันที่ใช้งาน</h3>
+                        </div>
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <input type="date" id="booking-date-input" onchange="handleDateOrCourtChange()" class="bg-slate-950 border border-slate-700 text-white px-4 py-3 rounded-xl focus:border-emerald-500 focus:outline-none w-full sm:w-auto font-sans">
+                            <div class="flex items-center space-x-2 text-xs text-slate-400 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
+                                <i class="fa-solid fa-calendar-day text-emerald-400 text-base"></i>
+                                <span>เปิดให้บริการทุกวัน 09:00 - 23:00 น.</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STEP 3: Multi-Slot Time Selection -->
+                    <div class="glass-card p-6 rounded-2xl space-y-4">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-3">
+                                <span class="w-8 h-8 rounded-full bg-emerald-500 text-slate-950 font-bold flex items-center justify-center text-sm">3</span>
+                                <h3 class="text-lg font-bold text-white">เลือกช่วงเวลา (เลือกได้มากกว่า 1 ช่วง)</h3>
+                            </div>
+                            <span class="text-xs text-slate-400">ราคาตามช่วงเวลาที่กำหนด</span>
+                        </div>
+                        <div id="booking-time-slots-grid" class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <!-- Dynamic time slot chips rendered via JS -->
+                        </div>
+                    </div>
+
+                    <!-- STEP 4: Equipment Addons & Promo Code -->
+                    <div class="glass-card p-6 rounded-2xl space-y-4">
+                        <div class="flex items-center space-x-3">
+                            <span class="w-8 h-8 rounded-full bg-emerald-500 text-slate-950 font-bold flex items-center justify-center text-sm">4</span>
+                            <h3 class="text-lg font-bold text-white">บริการเสริม & โค้ดส่วนลด</h3>
+                        </div>
+
+                        <!-- Addons Checkboxes -->
+                        <div class="space-y-3 pt-2">
+                            <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-800 bg-slate-950/50 hover:border-slate-700 cursor-pointer transition">
+                                <div class="flex items-center space-x-3">
+                                    <input type="checkbox" id="addon-racket-check" onchange="recalculateSummary()" class="w-5 h-5 accent-emerald-500 rounded">
+                                    <div>
+                                        <p class="text-sm font-semibold text-white">เช่าไม้แบดมินตัน Yonex (2 ไม้)</p>
+                                        <p class="text-xs text-slate-400">เอ็นสเปกแข่งขัน 22 ปอนด์ พร้อมกริปใหม่</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-bold text-emerald-400">+฿40</span>
+                            </label>
+
+                            <label class="flex items-center justify-between p-3.5 rounded-xl border border-slate-800 bg-slate-950/50 hover:border-slate-700 cursor-pointer transition">
+                                <div class="flex items-center space-x-3">
+                                    <input type="checkbox" id="addon-shuttle-check" onchange="recalculateSummary()" class="w-5 h-5 accent-emerald-500 rounded">
+                                    <div>
+                                        <p class="text-sm font-semibold text-white">ซื้อลูกแบดมินตัน RSL Silver (1 หลอด / 12 ลูก)</p>
+                                        <p class="text-xs text-slate-400">วิถีแม่นยำ หัวคอร์กแท้ ทนทานสปีด 75</p>
+                                    </div>
+                                </div>
+                                <span class="text-sm font-bold text-emerald-400">+฿350</span>
+                            </label>
+                        </div>
+
+                        <!-- Promo Code Input -->
+                        <div class="pt-2">
+                            <label class="block text-xs font-semibold text-slate-400 mb-1.5">โค้ดส่วนลด (Promo Code):</label>
+                            <div class="flex space-x-2">
+                                <input type="text" id="promo-code-input" uppercase placeholder="กรอกโค้ด เช่น BAD20" class="bg-slate-950 border border-slate-700 text-white px-4 py-2.5 rounded-xl text-sm focus:border-emerald-500 focus:outline-none flex-grow uppercase font-mono tracking-wider">
+                                <button onclick="applyPromoCode()" class="bg-slate-800 hover:bg-slate-700 text-emerald-400 font-bold px-5 py-2.5 rounded-xl text-sm border border-slate-700 transition">
+                                    ใช้งาน
+                                </button>
+                            </div>
+                            <div id="promo-status-msg" class="text-xs mt-1.5 hidden"></div>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Right Column: Live Booking Summary Card -->
+                <div class="lg:col-span-1">
+                    <div class="glass-card p-6 rounded-2xl sticky top-32 space-y-6 border-t-4 border-t-emerald-500">
+                        <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+                            <h3 class="text-lg font-bold text-white">สรุปรายการจอง</h3>
+                            <span class="text-xs bg-emerald-950 text-emerald-400 border border-emerald-800 px-2.5 py-1 rounded-full font-semibold">ขั้นตอนสุดท้าย</span>
+                        </div>
+
+                        <!-- Summary Details Breakdown -->
+                        <div class="space-y-3 text-sm">
+                            <div class="flex justify-between text-slate-300">
+                                <span class="text-slate-400">สนามที่เลือก:</span>
+                                <span id="summary-court-name" class="font-bold text-white">สนาม 1</span>
+                            </div>
+                            <div class="flex justify-between text-slate-300">
+                                <span class="text-slate-400">วันที่:</span>
+                                <span id="summary-date" class="font-medium text-white">-</span>
+                            </div>
+                            <div class="flex justify-between text-slate-300">
+                                <span class="text-slate-400">ช่วงเวลา (<span id="summary-hours-count">0</span> ชม.):</span>
+                                <span id="summary-time-slots" class="font-medium text-white text-right max-w-[160px] truncate">-</span>
+                            </div>
+                            <div class="flex justify-between text-slate-300">
+                                <span class="text-slate-400">ค่าสนามรวม:</span>
+                                <span id="summary-court-price" class="font-medium text-white">฿0</span>
+                            </div>
+                            <div class="flex justify-between text-slate-300">
+                                <span class="text-slate-400">อุปกรณ์เสริม:</span>
+                                <span id="summary-addon-price" class="font-medium text-white">฿0</span>
+                            </div>
+                            <div id="summary-discount-row" class="flex justify-between text-rose-400 hidden">
+                                <span>ส่วนลดโปรโมชัน:</span>
+                                <span id="summary-discount-price" class="font-bold">-฿0</span>
+                            </div>
+
+                            <div class="border-t border-slate-800 pt-3 flex justify-between items-end">
+                                <div>
+                                    <span class="text-xs text-slate-400 block">ราคารวมสุทธิ</span>
+                                    <span class="text-xs text-emerald-400">รวมภาษีมูลค่าเพิ่มแล้ว</span>
+                                </div>
+                                <span id="summary-grand-total" class="text-3xl font-extrabold text-emerald-400">฿0</span>
+                            </div>
+                        </div>
+
+                        <!-- Pay Button -->
+                        <button onclick="openPaymentModal()" id="pay-submit-btn" disabled class="w-full gradient-btn disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-bold py-4 rounded-xl text-base shadow-xl flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-qrcode"></i>
+                            <span>ดำเนินการชำระเงิน</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==================== TAB 3: MY BOOKINGS ==================== -->
+        <section id="view-my-bookings" class="tab-view hidden space-y-6">
+            <div class="flex flex-wrap items-center justify-between gap-4 border-b border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-2xl font-bold text-white">ประวัติการจองของฉัน</h2>
+                    <p class="text-slate-400 text-sm">ตรวจสอบสถานะการชำระเงินและตั๋วสลิปเข้าใช้สนาม</p>
+                </div>
+                <!-- Status Filter Pills -->
+                <div class="flex space-x-1 bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs">
+                    <button onclick="filterMyBookings('ALL')" id="filter-btn-ALL" class="booking-filter-btn px-3 py-1.5 rounded-lg font-medium text-emerald-400 bg-emerald-950/60 border border-emerald-800/60">ทั้งหมด</button>
+                    <button onclick="filterMyBookings('PENDING')" id="filter-btn-PENDING" class="booking-filter-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white">รออนุมัติ</button>
+                    <button onclick="filterMyBookings('APPROVED')" id="filter-btn-APPROVED" class="booking-filter-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white">อนุมัติแล้ว</button>
+                    <button onclick="filterMyBookings('REJECTED')" id="filter-btn-REJECTED" class="booking-filter-btn px-3 py-1.5 rounded-lg font-medium text-slate-400 hover:text-white">ถูกปฏิเสธ</button>
+                </div>
+            </div>
+
+            <!-- Booking Cards List Container -->
+            <div id="my-bookings-container" class="space-y-4">
+                <!-- Dynamic Tickets Rendered via JS -->
+            </div>
+        </section>
+
+        <!-- ==================== TAB 4: ADMIN DASHBOARD ==================== -->
+        <section id="view-admin" class="tab-view hidden space-y-8">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="bg-indigo-950 text-indigo-400 border border-indigo-800 px-2.5 py-0.5 rounded-full text-xs font-bold">Admin Only</span>
+                        <h2 class="text-2xl font-bold text-white">ระบบผู้ดูแลสนาม (Admin Control)</h2>
+                    </div>
+                    <p class="text-slate-400 text-sm">จัดการอนุมัติสลิป ปิดสนามปรับปรุง และโพสต์ประกาศสโมสร</p>
+                </div>
+            </div>
+
+            <!-- Stats Overview Cards -->
+            <div class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                <div class="glass-card p-5 rounded-2xl border-l-4 border-l-emerald-500 space-y-1">
+                    <span class="text-xs text-slate-400 font-medium">รายได้รวมที่อนุมัติ</span>
+                    <h3 id="admin-stat-revenue" class="text-2xl font-extrabold text-emerald-400">฿0</h3>
+                </div>
+                <div class="glass-card p-5 rounded-2xl border-l-4 border-l-indigo-500 space-y-1">
+                    <span class="text-xs text-slate-400 font-medium">การจองทั้งหมด</span>
+                    <h3 id="admin-stat-total" class="text-2xl font-extrabold text-indigo-400">0</h3>
+                </div>
+                <div class="glass-card p-5 rounded-2xl border-l-4 border-l-amber-500 space-y-1">
+                    <span class="text-xs text-slate-400 font-medium">รอการอนุมัติสลิป</span>
+                    <h3 id="admin-stat-pending" class="text-2xl font-extrabold text-amber-400">0</h3>
+                </div>
+                <div class="glass-card p-5 rounded-2xl border-l-4 border-l-rose-500 space-y-1">
+                    <span class="text-xs text-slate-400 font-medium">สนามปิดปรับปรุง</span>
+                    <h3 id="admin-stat-locked" class="text-2xl font-extrabold text-rose-400">0</h3>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left 2 Columns: Pending Approvals & Slips -->
+                <div class="lg:col-span-2 space-y-6">
+                    <div class="glass-card p-6 rounded-2xl space-y-4">
+                        <h3 class="text-lg font-bold text-white flex items-center justify-between">
+                            <span><i class="fa-solid fa-clipboard-check text-indigo-400 mr-2"></i>รายการรอตรวจสอบสลิป</span>
+                            <span class="text-xs text-slate-400">เรียงตามรายการล่าสุด</span>
+                        </h3>
+
+                        <div id="admin-pending-approval-list" class="space-y-4">
+                            <!-- Dynamic Pending Admin Approval Cards -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right 1 Column: Lock Court Manager & Post Announcements -->
+                <div class="lg:col-span-1 space-y-6">
+                    <!-- Court Maintenance / Lock Switcher -->
+                    <div class="glass-card p-6 rounded-2xl space-y-4">
+                        <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                            <i class="fa-solid fa-lock text-rose-400"></i>
+                            <span>สวิตช์ปิด/เปิดสนาม</span>
+                        </h3>
+                        <p class="text-xs text-slate-400">กดสวิตช์เพื่อปิดสนามชั่วคราว (ระบบจะป้องกันไม่ให้ผู้ใช้จองสนามนั้น)</p>
+                        
+                        <div id="admin-court-locks-grid" class="space-y-3">
+                            <!-- Dynamic Court Lock Toggles -->
+                        </div>
+                    </div>
+
+                    <!-- Post Announcement Box -->
+                    <div class="glass-card p-6 rounded-2xl space-y-4">
+                        <h3 class="text-lg font-bold text-white flex items-center space-x-2">
+                            <i class="fa-solid fa-bullhorn text-amber-400"></i>
+                            <span>สร้างประกาศสโมสรใหม่</span>
+                        </h3>
+                        <div class="space-y-3">
+                            <input type="text" id="admin-announcement-input" placeholder="พิมพ์ข้อความประกาศ..." class="bg-slate-950 border border-slate-700 text-white px-4 py-2.5 rounded-xl text-sm w-full focus:border-indigo-500 focus:outline-none">
+                            <button onclick="postAdminAnnouncement()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2.5 rounded-xl text-sm transition flex items-center justify-center space-x-2">
+                                <i class="fa-solid fa-paper-plane"></i>
+                                <span>โพสต์ประกาศเข้าสู่หน้าแรก</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- ==================== PAYMENT MODAL ==================== -->
+    <div id="payment-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-card max-w-md w-full rounded-3xl p-6 sm:p-8 space-y-6 border border-slate-700 shadow-2xl relative animate-in fade-in zoom-in duration-200">
+            <button onclick="closePaymentModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white w-8 h-8 rounded-full bg-slate-900 border border-slate-800 flex items-center justify-center">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+
+            <div class="text-center space-y-2">
+                <div class="w-14 h-14 rounded-2xl bg-emerald-950 text-emerald-400 mx-auto flex items-center justify-center text-2xl border border-emerald-800/60">
+                    <i class="fa-solid fa-qrcode"></i>
+                </div>
+                <h3 class="text-xl font-bold text-white">ชำระเงินผ่าน PromptPay QR</h3>
+                <p class="text-xs text-slate-400">สแกนชำระตามยอดเงินที่ระบุและแนบสลิปเพื่อยืนยัน</p>
+            </div>
+
+            <!-- Dynamic PromptPay Card Mockup -->
+            <div class="bg-white text-slate-900 rounded-2xl p-5 space-y-4 text-center shadow-lg border border-slate-200">
+                <div class="flex items-center justify-between border-b pb-2 text-xs font-bold text-slate-600">
+                    <span>PROMPTPAY QR PAYMENT</span>
+                    <span class="text-emerald-600">SMASHZONE CLUB</span>
+                </div>
+                
+                <!-- Styled QR Display -->
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 inline-block mx-auto">
+                    <!-- SVG QR Code Icon Simulation -->
+                    <div class="w-40 h-40 bg-slate-900 rounded-lg p-2 flex flex-col justify-between items-center text-white relative overflow-hidden">
+                        <div class="grid grid-cols-5 gap-1 w-full h-full p-1 opacity-90">
+                            <div class="bg-white rounded-sm"></div><div class="bg-white rounded-sm"></div><div class="bg-white rounded-sm"></div><div class="bg-slate-900"></div><div class="bg-white rounded-sm"></div>
+                            <div class="bg-white rounded-sm"></div><div class="bg-slate-900"></div><div class="bg-white rounded-sm"></div><div class="bg-white rounded-sm"></div><div class="bg-slate-900"></div>
+                            <div class="bg-white rounded-sm"></div><div class="bg-white rounded-sm"></div><div class="bg-white rounded-sm"></div><div class="bg-slate-900"></div><div class="bg-white rounded-sm"></div>
+                            <div class="bg-slate-900"></div><div class="bg-white rounded-sm"></div><div class="bg-slate-900"></div><div class="bg-white rounded-sm"></div><div class="bg-white rounded-sm"></div>
+                            <div class="bg-white rounded-sm"></div><div class="bg-slate-900"></div><div class="bg-white rounded-sm"></div><div class="bg-white rounded-sm"></div><div class="bg-white rounded-sm"></div>
+                        </div>
+                        <div class="absolute inset-0 flex items-center justify-center">
+                            <div class="bg-emerald-500 text-slate-950 font-extrabold text-[10px] px-2 py-0.5 rounded shadow">PromptPay</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <span class="text-xs text-slate-500 block">ยอดเงินที่ต้องโอน</span>
+                    <span id="modal-payment-amount" class="text-3xl font-extrabold text-emerald-600">฿0</span>
+                </div>
+
+                <div class="text-xs text-slate-600 bg-slate-100 p-2.5 rounded-xl flex items-center justify-between">
+                    <span>เลขที่บัญชี: <strong class="font-mono text-slate-900">089-123-4567</strong></span>
+                    <button onclick="copyToClipboard('0891234567', 'คัดลอกเลขบัญชีแล้ว!')" class="text-emerald-700 font-bold hover:underline">คัดลอก</button>
+                </div>
+            </div>
+
+            <!-- Slip Attachment Simulator -->
+            <div class="space-y-2">
+                <label class="block text-xs font-semibold text-slate-300">แนบหลักฐานการโอนเงิน (สลิป):</label>
+                <div onclick="simulateAttachSlip()" id="slip-upload-box" class="border-2 border-dashed border-slate-700 hover:border-emerald-500 bg-slate-950/60 rounded-2xl p-4 text-center cursor-pointer transition space-y-1">
+                    <i id="slip-icon" class="fa-solid fa-cloud-arrow-up text-emerald-400 text-2xl"></i>
+                    <p id="slip-upload-text" class="text-xs font-medium text-slate-300">กดที่นี่เพื่อจำลองแนบรูปสลิปโอนเงิน</p>
+                    <p class="text-[10px] text-slate-500">รองรับไฟล์ JPG, PNG (ระบบจะสร้างสลิปตัวอย่างอัตโนมัติ)</p>
+                </div>
+            </div>
+
+            <!-- Confirm Button -->
+            <button onclick="submitBookingWithPayment()" id="confirm-pay-btn" disabled class="w-full gradient-btn disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-bold py-3.5 rounded-xl text-base shadow-lg flex items-center justify-center space-x-2">
+                <i class="fa-solid fa-circle-check"></i>
+                <span>ยืนยันการส่งสลิปจองสนาม</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- SLIP PREVIEW MODAL -->
+    <div id="slip-preview-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+        <div class="glass-card max-w-sm w-full rounded-3xl p-6 space-y-4 border border-slate-700 shadow-2xl relative">
+            <button onclick="closeSlipModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <h3 class="text-lg font-bold text-white text-center">หลักฐานสลิปการโอนเงิน</h3>
+            <div id="slip-preview-container" class="rounded-xl overflow-hidden border border-slate-700 bg-slate-900 p-2">
+                <!-- Rendered image preview or Canvas snippet -->
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION CONTAINER -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 space-y-2 pointer-events-none"></div>
+
+    <!-- FOOTER -->
+    <footer class="bg-slate-950 border-t border-slate-800/80 py-8 text-xs text-slate-500 mt-12">
+        <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div class="flex items-center space-x-2">
+                <i class="fa-solid fa-shuttlecock text-emerald-400 text-base"></i>
+                <span class="font-bold text-slate-300">SmashZone Badminton Club</span>
+                <span>© 2026 สงวนลิขสิทธิ์ทั้งหมด</span>
+            </div>
+            <div class="flex space-x-6">
+                <a href="#" class="hover:text-emerald-400 transition">กฎระเบียบการใช้สนาม</a>
+                <a href="#" class="hover:text-emerald-400 transition">นโยบายความเป็นส่วนตัว</a>
+                <a href="#" class="hover:text-emerald-400 transition">ติดต่อเรา 02-123-4567</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Web Audio API Sound Feedback Synthesizer (No external sound files required)
+        class SoundFX {
+            static init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+
+            static playClick() {
+                this.init();
+                if (!this.ctx) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(600, this.ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(800, this.ctx.currentTime + 0.05);
+                gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, this.ctx.currentTime + 0.05);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + 0.05);
+            }
+
+            static playSuccess() {
+                this.init();
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(523.25, now); // C5
+                osc.frequency.setValueAtTime(659.25, now + 0.08); // E5
+                osc.frequency.setValueAtTime(783.99, now + 0.16); // G5
+                osc.frequency.setValueAtTime(1046.50, now + 0.24); // C6
+                gain.gain.setValueAtTime(0.15, now);
+                gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(now + 0.4);
+            }
+        }
+
+        // APP INITIAL STATE & CONSTANTS
+        const DEFAULT_COURTS = [
+            { id: 1, name: 'สนาม 1 (VIP BWF Rubber)', type: 'พรมยาง VIP BWF 5mm', price: 200, isLocked: false, desc: 'พื้นยางสังเคราะห์แข่งขันมาตรฐานสูงสุด' },
+            { id: 2, name: 'สนาม 2 (Standard Rubber)', type: 'พรมยางมาตรฐาน PB', price: 160, isLocked: false, desc: 'ยางคุณภาพสูง ซับแรงกระแทกเยี่ยม' },
+            { id: 3, name: 'สนาม 3 (Standard Rubber)', type: 'พรมยางมาตรฐาน PB', price: 160, isLocked: false, desc: 'ยางคุณภาพสูง เหมาะกับการซ้อมแข่ง' },
+            { id: 4, name: 'สนาม 4 (Wooden Parquet)', type: 'พื้นไม้ปาร์เก้สปริง', price: 150, isLocked: false, desc: 'พื้นไม้ธรรมชาติเด้งสปริงตัวดี' }
+        ];
+
+        const TIME_SLOTS = [
+            '16:00 - 17:00',
+            '17:00 - 18:00',
+            '18:00 - 19:00',
+            '19:00 - 20:00',
+            '20:00 - 21:00',
+            '21:00 - 22:00'
+        ];
+
+        // State variables
+        let appState = {
+            role: 'GUEST', // 'GUEST', 'MEMBER', 'ADMIN'
+            currentTab: 'home',
+            courts: JSON.parse(localStorage.getItem('smash_courts')) || DEFAULT_COURTS,
+            bookings: JSON.parse(localStorage.getItem('smash_bookings')) || [
+                {
+                    id: 'BK-8841',
+                    courtId: 1,
+                    courtName: 'สนาม 1 (VIP BWF Rubber)',
+                    date: '2026-09-26',
+                    timeSlots: ['18:00 - 19:00'],
+                    price: 200,
+                    status: 'APPROVED', // 'PENDING', 'APPROVED', 'REJECTED'
+                    slipDataUrl: 'SIMULATED_SLIP_DATA',
+                    createdAt: new Date().toISOString()
+                },
+                {
+                    id: 'BK-8842',
+                    courtId: 2,
+                    courtName: 'สนาม 2 (Standard Rubber)',
+                    date: '2026-09-27',
+                    timeSlots: ['19:00 - 20:00', '20:00 - 21:00'],
+                    price: 320,
+                    status: 'PENDING',
+                    slipDataUrl: 'SIMULATED_SLIP_DATA',
+                    createdAt: new Date().toISOString()
+                }
+            ],
+            announcements: JSON.parse(localStorage.getItem('smash_announcements')) || [
+                '🎉 ต้อนรับสมาชิกใหม่! กรอกโค้ด BAD20 รับส่วนลดค่าสนาม 20%',
+                '📢 สนามที่ 3 เปิดให้บริการตามปกติแล้ววันนี้'
+            ],
+            selectedCourtId: 1,
+            selectedDate: new Date().toISOString().split('T')[0],
+            selectedTimeSlots: ['18:00 - 19:00'],
+            appliedPromo: null,
+            slipAttached: false,
+            activeMyBookingFilter: 'ALL'
+        };
+
+        // Save state helper
+        function persistData() {
+            localStorage.setItem('smash_courts', JSON.stringify(appState.courts));
+            localStorage.setItem('smash_bookings', JSON.stringify(appState.bookings));
+            localStorage.setItem('smash_announcements', JSON.stringify(appState.announcements));
+        }
+
+        // SWITCH TAB NAVIGATION
+        function switchTab(tabName) {
+            SoundFX.playClick();
+            appState.currentTab = tabName;
+
+            // Hide all tab views
+            document.querySelectorAll('.tab-view').forEach(view => view.classList.add('hidden'));
+
+            // Show target tab view
+            const target = document.getElementById(`view-${tabName}`);
+            if (target) target.classList.remove('hidden');
+
+            // Update desktop nav buttons active style
+            document.querySelectorAll('.nav-tab-btn').forEach(btn => {
+                btn.classList.remove('bg-slate-800', 'text-white', 'border', 'border-slate-700');
+                btn.classList.add('text-slate-300');
+            });
+
+            const activeBtn = document.getElementById(`tab-nav-${tabName}`);
+            if (activeBtn) {
+                activeBtn.classList.add('bg-slate-800', 'text-white', 'border', 'border-slate-700');
+            }
+
+            // Update mobile buttons
+            document.querySelectorAll('.mobile-nav-btn').forEach(btn => btn.classList.remove('text-emerald-400', 'font-semibold'));
+            const mobileBtn = document.getElementById(`mobile-tab-${tabName}`);
+            if (mobileBtn) mobileBtn.classList.add('text-emerald-400', 'font-semibold');
+
+            // Refresh specific view components
+            if (tabName === 'home') renderHomeView();
+            if (tabName === 'booking') renderBookingView();
+            if (tabName === 'my-bookings') renderMyBookingsView();
+            if (tabName === 'admin') renderAdminView();
+        }
+
+        // ROLE SWITCHER
+        function setRole(role) {
+            SoundFX.playClick();
+            appState.role = role;
+
+            // Update buttons styling
+            document.querySelectorAll('.role-btn').forEach(btn => {
+                btn.classList.remove('bg-emerald-500', 'text-slate-950', 'bg-indigo-600', 'text-white', 'font-bold');
+            });
+
+            const targetBtn = document.getElementById(`role-${role.toLowerCase()}-btn`);
+            if (targetBtn) {
+                if (role === 'ADMIN') {
+                    targetBtn.classList.add('bg-indigo-600', 'text-white', 'font-bold');
+                } else {
+                    targetBtn.classList.add('bg-emerald-500', 'text-slate-950', 'font-bold');
+                }
+            }
+
+            // Indicator Display Text
+            const indicator = document.getElementById('role-text-display');
+            if (role === 'GUEST') indicator.textContent = 'สิทธิ์: ผู้เยี่ยมชม';
+            if (role === 'MEMBER') indicator.textContent = 'สิทธิ์: สมาชิกคอร์ท';
+            if (role === 'ADMIN') indicator.textContent = 'สิทธิ์: ผู้ดูแลระบบ (Admin)';
+
+            // Toggle Admin Tab Visibility
+            const adminNavBtn = document.getElementById('tab-nav-admin');
+            const adminMobileNavBtn = document.getElementById('mobile-tab-admin');
+            if (role === 'ADMIN') {
+                adminNavBtn.classList.remove('hidden');
+                adminMobileNavBtn.classList.remove('hidden');
+                showToast('สลับเข้าสู่สิทธิ์ แอดมิน (Admin Mode) แล้ว', 'info');
+            } else {
+                adminNavBtn.classList.add('hidden');
+                adminMobileNavBtn.classList.add('hidden');
+                if (appState.currentTab === 'admin') switchTab('home');
+                showToast(`สลับเข้าสู่สิทธิ์ ${role} แล้ว`, 'success');
+            }
+        }
+
+        // RENDER HOME VIEW
+        function renderHomeView() {
+            // Render Live Announcements
+            const annContainer = document.getElementById('home-live-announcements-list');
+            annContainer.innerHTML = appState.announcements.map(ann => `
+                <p class="flex items-center text-slate-300">
+                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-2 shrink-0"></span>
+                    <span>${ann}</span>
+                </p>
+            `).join('');
+
+            // Render Court Cards Grid
+            const courtsGrid = document.getElementById('home-courts-grid');
+            courtsGrid.innerHTML = appState.courts.map(court => `
+                <div class="glass-card glass-card-hover p-6 rounded-2xl space-y-4 flex flex-col justify-between transition">
+                    <div class="space-y-2">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs font-bold text-emerald-400 bg-emerald-950 border border-emerald-800/60 px-2.5 py-1 rounded-full">
+                                ${court.type}
+                            </span>
+                            ${court.isLocked 
+                                ? `<span class="text-[11px] font-bold text-rose-400 bg-rose-950/80 border border-rose-800 px-2.5 py-0.5 rounded-full flex items-center"><i class="fa-solid fa-lock mr-1"></i> ปิดปรับปรุง</span>`
+                                : `<span class="text-[11px] font-bold text-emerald-400 bg-emerald-950/80 border border-emerald-800 px-2.5 py-0.5 rounded-full flex items-center"><i class="fa-solid fa-circle mr-1 text-[8px]"></i> พร้อมใช้งาน</span>`
+                            }
+                        </div>
+                        <h4 class="text-lg font-bold text-white">${court.name}</h4>
+                        <p class="text-xs text-slate-400 leading-relaxed">${court.desc}</p>
+                    </div>
+
+                    <div class="border-t border-slate-800 pt-4 flex items-center justify-between mt-2">
+                        <div>
+                            <span class="text-2xl font-extrabold text-emerald-400">฿${court.price}</span>
+                            <span class="text-xs text-slate-500"> / ชั่วโมง</span>
+                        </div>
+                        <button onclick="selectCourtAndGoBooking(${court.id})" ${court.isLocked ? 'disabled' : ''} class="gradient-btn disabled:opacity-40 text-slate-950 font-bold px-4 py-2 rounded-xl text-xs flex items-center space-x-1">
+                            <span>${court.isLocked ? 'ปิดบริการ' : 'เลือกจองสนามนี้'}</span>
+                            <i class="fa-solid fa-arrow-right text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectCourtAndGoBooking(courtId) {
+            appState.selectedCourtId = courtId;
+            switchTab('booking');
+        }
+
+        // RENDER BOOKING VIEW
+        function renderBookingView() {
+            // Render Court Selection Grid
+            const courtSelectorGrid = document.getElementById('booking-court-selector-grid');
+            courtSelectorGrid.innerHTML = appState.courts.map(court => {
+                const isSelected = appState.selectedCourtId === court.id;
+                return `
+                    <button onclick="selectCourtInBooking(${court.id})" ${court.isLocked ? 'disabled' : ''} class="p-4 rounded-xl border text-left transition flex items-center justify-between ${
+                        court.isLocked 
+                            ? 'bg-slate-950 border-slate-800 opacity-50 cursor-not-allowed'
+                            : isSelected 
+                                ? 'bg-emerald-950/80 border-emerald-500 shadow-md shadow-emerald-950'
+                                : 'bg-slate-950/50 border-slate-800 hover:border-slate-700'
+                    }">
+                        <div>
+                            <p class="text-sm font-bold ${isSelected ? 'text-emerald-400' : 'text-white'}">${court.name}</p>
+                            <p class="text-xs text-slate-400">฿${court.price}/ชม. ${court.isLocked ? ' (ปิดบริการ)' : ''}</p>
+                        </div>
+                        ${isSelected ? '<i class="fa-solid fa-circle-check text-emerald-400 text-lg"></i>' : ''}
+                    </button>
+                `;
+            }).join('');
+
+            // Set Date Input Value
+            document.getElementById('booking-date-input').value = appState.selectedDate;
+
+            // Render Time Slots Grid
+            const timeSlotsGrid = document.getElementById('booking-time-slots-grid');
+            timeSlotsGrid.innerHTML = TIME_SLOTS.map(time => {
+                const isSelected = appState.selectedTimeSlots.includes(time);
+                return `
+                    <button onclick="toggleTimeSlot('${time}')" class="p-3 rounded-xl text-xs font-bold border transition ${
+                        isSelected 
+                            ? 'bg-emerald-500 text-slate-950 border-emerald-400 shadow-md shadow-emerald-950'
+                            : 'bg-slate-950 border-slate-800 text-slate-300 hover:border-slate-700'
+                    }">
+                        <i class="fa-regular fa-clock mr-1"></i> ${time}
+                    </button>
+                `;
+            }).join('');
+
+            recalculateSummary();
+        }
+
+        function selectCourtInBooking(courtId) {
+            SoundFX.playClick();
+            appState.selectedCourtId = courtId;
+            renderBookingView();
+        }
+
+        function handleDateOrCourtChange() {
+            appState.selectedDate = document.getElementById('booking-date-input').value;
+            recalculateSummary();
+        }
+
+        function toggleTimeSlot(time) {
+            SoundFX.playClick();
+            if (appState.selectedTimeSlots.includes(time)) {
+                appState.selectedTimeSlots = appState.selectedTimeSlots.filter(t => t !== time);
+            } else {
+                appState.selectedTimeSlots.push(time);
+            }
+            renderBookingView();
+        }
+
+        // RECALCULATE BOOKING SUMMARY
+        function recalculateSummary() {
+            const currentCourt = appState.courts.find(c => c.id === appState.selectedCourtId) || appState.courts[0];
+            const hoursCount = appState.selectedTimeSlots.length;
+            const courtPriceTotal = currentCourt.price * hoursCount;
+
+            const needRacket = document.getElementById('addon-racket-check')?.checked || false;
+            const needShuttle = document.getElementById('addon-shuttle-check')?.checked || false;
+            const addonTotal = (needRacket ? 40 : 0) + (needShuttle ? 350 : 0);
+
+            let subtotal = courtPriceTotal + addonTotal;
+            let discountAmount = 0;
+
+            if (appState.appliedPromo === 'BAD20') {
+                discountAmount = Math.round(subtotal * 0.20);
+            } else if (appState.appliedPromo === 'SMASH100') {
+                discountAmount = 100;
+            }
+
+            const grandTotal = Math.max(0, subtotal - discountAmount);
+
+            // Update Summary UI
+            document.getElementById('summary-court-name').textContent = currentCourt.name;
+            document.getElementById('summary-date').textContent = appState.selectedDate || '-';
+            document.getElementById('summary-hours-count').textContent = hoursCount;
+            document.getElementById('summary-time-slots').textContent = appState.selectedTimeSlots.join(', ') || 'ยังไม่ได้เลือกช่วงเวลา';
+            document.getElementById('summary-court-price').textContent = `฿${courtPriceTotal}`;
+            document.getElementById('summary-addon-price').textContent = `฿${addonTotal}`;
+
+            const discountRow = document.getElementById('summary-discount-row');
+            if (discountAmount > 0) {
+                discountRow.classList.remove('hidden');
+                document.getElementById('summary-discount-price').textContent = `-฿${discountAmount}`;
+            } else {
+                discountRow.classList.add('hidden');
+            }
+
+            document.getElementById('summary-grand-total').textContent = `฿${grandTotal}`;
+
+            // Enable / Disable Submit Pay Button
+            const payBtn = document.getElementById('pay-submit-btn');
+            if (hoursCount > 0 && !currentCourt.isLocked) {
+                payBtn.disabled = false;
+            } else {
+                payBtn.disabled = true;
+            }
+
+            return { grandTotal, currentCourt, hoursCount, addonTotal, discountAmount };
+        }
+
+        function applyPromoCode() {
+            const code = document.getElementById('promo-code-input').value.trim().toUpperCase();
+            const msgBox = document.getElementById('promo-status-msg');
+            msgBox.classList.remove('hidden');
+
+            if (code === 'BAD20') {
+                appState.appliedPromo = 'BAD20';
+                msgBox.className = 'text-xs mt-1.5 text-emerald-400 font-bold';
+                msgBox.textContent = '🎉 ส่วนลด BAD20 ถูกนำไปใช้แล้ว (ลด 20%)';
+                SoundFX.playSuccess();
+            } else if (code === 'SMASH100') {
+                appState.appliedPromo = 'SMASH100';
+                msgBox.className = 'text-xs mt-1.5 text-amber-400 font-bold';
+                msgBox.textContent = '🎉 ส่วนลด SMASH100 ถูกนำไปใช้แล้ว (ลด 100 บาท)';
+                SoundFX.playSuccess();
+            } else {
+                appState.appliedPromo = null;
+                msgBox.className = 'text-xs mt-1.5 text-rose-400 font-bold';
+                msgBox.textContent = '❌ โค้ดส่วนลดไม่ถูกต้องหรือหมดอายุ';
+            }
+            recalculateSummary();
+        }
+
+        function copyPromoCode(code) {
+            copyToClipboard(code, `คัดลอกโค้ด ${code} สำเร็จแล้ว!`);
+            document.getElementById('promo-code-input').value = code;
+            switchTab('booking');
+            applyPromoCode();
+        }
+
+        // PAYMENT MODAL & SLIP ATTACHMENT
+        function openPaymentModal() {
+            SoundFX.playClick();
+            const summary = recalculateSummary();
+            document.getElementById('modal-payment-amount').textContent = `฿${summary.grandTotal}`;
+            
+            // Reset slip state
+            appState.slipAttached = false;
+            document.getElementById('confirm-pay-btn').disabled = true;
+            document.getElementById('slip-upload-box').className = "border-2 border-dashed border-slate-700 hover:border-emerald-500 bg-slate-950/60 rounded-2xl p-4 text-center cursor-pointer transition space-y-1";
+            document.getElementById('slip-upload-text').textContent = "กดที่นี่เพื่อจำลองแนบรูปสลิปโอนเงิน";
+            document.getElementById('slip-icon').className = "fa-solid fa-cloud-arrow-up text-emerald-400 text-2xl";
+
+            document.getElementById('payment-modal').classList.remove('hidden');
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-modal').classList.add('hidden');
+        }
+
+        function simulateAttachSlip() {
+            SoundFX.playSuccess();
+            appState.slipAttached = true;
+            document.getElementById('confirm-pay-btn').disabled = false;
+            
+            const box = document.getElementById('slip-upload-box');
+            box.className = "border-2 border-emerald-500 bg-emerald-950/40 rounded-2xl p-4 text-center cursor-pointer transition space-y-1";
+            document.getElementById('slip-upload-text').textContent = "✅ แนบไฟล์สลิปโอนเงินเรียบร้อยแล้ว (Slip_PromptPay.png)";
+            document.getElementById('slip-icon').className = "fa-solid fa-circle-check text-emerald-400 text-2xl";
+            showToast('แนบสลิปจำลองเรียบร้อยแล้ว!', 'success');
+        }
+
+        function submitBookingWithPayment() {
+            if (!appState.slipAttached) return;
+
+            SoundFX.playSuccess();
+            const summary = recalculateSummary();
+            const newBooking = {
+                id: `BK-${Math.floor(1000 + Math.random() * 9000)}`,
+                courtId: summary.currentCourt.id,
+                courtName: summary.currentCourt.name,
+                date: appState.selectedDate,
+                timeSlots: [...appState.selectedTimeSlots],
+                price: summary.grandTotal,
+                status: 'PENDING',
+                slipDataUrl: 'SIMULATED_SLIP_DATA',
+                createdAt: new Date().toISOString()
+            };
+
+            appState.bookings.unshift(newBooking);
+            persistData();
+
+            updateBadgeCount();
+            closePaymentModal();
+            showToast('ส่งข้อมูลการจองและแนบสลิปเรียบร้อยแล้ว! รอแอนมินตรวจสอบ', 'success');
+            switchTab('my-bookings');
+        }
+
+        // RENDER MY BOOKINGS VIEW
+        function renderMyBookingsView() {
+            const container = document.getElementById('my-bookings-container');
+            const filtered = appState.bookings.filter(b => {
+                if (appState.activeMyBookingFilter === 'ALL') return true;
+                return b.status === appState.activeMyBookingFilter;
+            });
+
+            if (filtered.length === 0) {
+                container.innerHTML = `
+                    <div class="glass-card p-12 rounded-2xl text-center space-y-3">
+                        <i class="fa-solid fa-receipt text-4xl text-slate-600"></i>
+                        <p class="text-base text-slate-400">ยังไม่มีรายการจองตามเงื่อนไขนี้</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = filtered.map(booking => {
+                let badgeClass = '';
+                let badgeText = '';
+
+                if (booking.status === 'APPROVED') {
+                    badgeClass = 'bg-emerald-950 text-emerald-400 border-emerald-800';
+                    badgeText = 'อนุมัติเรียบร้อย';
+                } else if (booking.status === 'PENDING') {
+                    badgeClass = 'bg-amber-950 text-amber-400 border-amber-800';
+                    badgeText = 'รออนุมัติสลิป';
+                } else {
+                    badgeClass = 'bg-rose-950 text-rose-400 border-rose-800';
+                    badgeText = 'ถูกปฏิเสธ';
+                }
+
+                return `
+                    <div class="glass-card p-6 rounded-2xl border border-slate-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                        <div class="space-y-2">
+                            <div class="flex items-center space-x-3">
+                                <span class="font-mono font-bold text-sm text-slate-400">${booking.id}</span>
+                                <span class="text-xs font-bold border px-3 py-1 rounded-full ${badgeClass}">
+                                    ${badgeText}
+                                </span>
+                            </div>
+                            <h4 class="text-lg font-bold text-white">${booking.courtName}</h4>
+                            <div class="flex flex-wrap items-center gap-4 text-xs text-slate-300">
+                                <span><i class="fa-regular fa-calendar text-emerald-400 mr-1"></i> ${booking.date}</span>
+                                <span><i class="fa-regular fa-clock text-emerald-400 mr-1"></i> ${booking.timeSlots.join(', ')}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between w-full md:w-auto md:space-x-6 border-t md:border-t-0 pt-4 md:pt-0 border-slate-800">
+                            <div class="text-left md:text-right">
+                                <span class="text-xs text-slate-400 block">ราคารวม</span>
+                                <span class="text-2xl font-extrabold text-emerald-400">฿${booking.price}</span>
+                            </div>
+                            <button onclick="viewSlipModal('${booking.id}')" class="bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium px-4 py-2.5 rounded-xl border border-slate-700 transition flex items-center space-x-1.5">
+                                <i class="fa-solid fa-file-invoice text-emerald-400"></i>
+                                <span>ดูสลิป</span>
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function filterMyBookings(filter) {
+            SoundFX.playClick();
+            appState.activeMyBookingFilter = filter;
+            document.querySelectorAll('.booking-filter-btn').forEach(btn => {
+                btn.classList.remove('text-emerald-400', 'bg-emerald-950/60', 'border', 'border-emerald-800/60');
+                btn.classList.add('text-slate-400');
+            });
+            const activeBtn = document.getElementById(`filter-btn-${filter}`);
+            if (activeBtn) {
+                activeBtn.classList.remove('text-slate-400');
+                activeBtn.classList.add('text-emerald-400', 'bg-emerald-950/60', 'border', 'border-emerald-800/60');
+            }
+            renderMyBookingsView();
+        }
+
+        function viewSlipModal(bookingId) {
+            SoundFX.playClick();
+            const booking = appState.bookings.find(b => b.id === bookingId);
+            const container = document.getElementById('slip-preview-container');
+
+            container.innerHTML = `
+                <div class="bg-white text-slate-900 p-4 rounded-xl text-center font-sans space-y-3">
+                    <div class="border-b pb-2 flex justify-between items-center text-xs font-bold text-slate-600">
+                        <span>สลิปจำลองการโอนเงิน</span>
+                        <span class="text-emerald-600">SUCCESS</span>
+                    </div>
+                    <div class="py-2">
+                        <span class="text-xs text-slate-500 block">รหัสรายการ: ${booking.id}</span>
+                        <span class="text-2xl font-extrabold text-emerald-600">฿${booking.price}</span>
+                        <p class="text-xs font-bold text-slate-800 mt-1">${booking.courtName}</p>
+                        <p class="text-[11px] text-slate-500">${booking.date} (${booking.timeSlots.join(', ')})</p>
+                    </div>
+                    <div class="bg-slate-100 p-2 rounded text-[10px] text-slate-500 text-left">
+                        <p>โอนไปยัง: SmashZone Badminton Club</p>
+                        <p>วันที่ทำรายการ: ${new Date(booking.createdAt).toLocaleString('th-TH')}</p>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('slip-preview-modal').classList.remove('hidden');
+        }
+
+        function closeSlipModal() {
+            document.getElementById('slip-preview-modal').classList.add('hidden');
+        }
+
+        // RENDER ADMIN DASHBOARD
+        function renderAdminView() {
+            if (appState.role !== 'ADMIN') return;
+
+            // Update Stats
+            const approvedRevenue = appState.bookings.filter(b => b.status === 'APPROVED').reduce((sum, b) => sum + b.price, 0);
+            const pendingCount = appState.bookings.filter(b => b.status === 'PENDING').length;
+            const lockedCount = appState.courts.filter(c => c.isLocked).length;
+
+            document.getElementById('admin-stat-revenue').textContent = `฿${approvedRevenue}`;
+            document.getElementById('admin-stat-total').textContent = appState.bookings.length;
+            document.getElementById('admin-stat-pending').textContent = pendingCount;
+            document.getElementById('admin-stat-locked').textContent = lockedCount;
+
+            // Render Court Locks Grid
+            const locksGrid = document.getElementById('admin-court-locks-grid');
+            locksGrid.innerHTML = appState.courts.map(court => `
+                <div class="flex items-center justify-between p-3 rounded-xl border border-slate-800 bg-slate-950/50">
+                    <div>
+                        <p class="text-sm font-bold text-white">${court.name}</p>
+                        <p class="text-xs ${court.isLocked ? 'text-rose-400' : 'text-emerald-400'}">
+                            ${court.isLocked ? '🔒 ถูกปิดปรับปรุง' : '🟢 พร้อมเปิดให้บริการ'}
+                        </p>
+                    </div>
+                    <button onclick="toggleCourtLock(${court.id})" class="px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+                        court.isLocked 
+                            ? 'bg-emerald-950 text-emerald-400 border border-emerald-800 hover:bg-emerald-900'
+                            : 'bg-rose-950 text-rose-400 border border-rose-800 hover:bg-rose-900'
+                    }">
+                        ${court.isLocked ? 'ปลดล็อกเปิดสนาม' : 'สวิตช์ปิดสนาม'}
+                    </button>
+                </div>
+            `).join('');
+
+            // Render Pending Approvals List
+            const approvalsList = document.getElementById('admin-pending-approval-list');
+            const pendingBookings = appState.bookings.filter(b => b.status === 'PENDING');
+
+            if (pendingBookings.length === 0) {
+                approvalsList.innerHTML = `
+                    <div class="p-8 text-center text-slate-500 text-xs">
+                        ไม่มีรายการที่รออนุมัติสลิปในขณะนี้
+                    </div>
+                `;
+                return;
+            }
+
+            approvalsList.innerHTML = pendingBookings.map(b => `
+                <div class="p-4 rounded-xl border border-slate-800 bg-slate-950/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                    <div class="space-y-1">
+                        <div class="flex items-center space-x-2">
+                            <span class="font-mono font-bold text-xs text-slate-400">${b.id}</span>
+                            <span class="text-xs font-extrabold text-emerald-400">฿${b.price}</span>
+                        </div>
+                        <h5 class="text-sm font-bold text-white">${b.courtName}</h5>
+                        <p class="text-xs text-slate-400">${b.date} (${b.timeSlots.join(', ')})</p>
+                    </div>
+
+                    <div class="flex items-center space-x-2">
+                        <button onclick="viewSlipModal('${b.id}')" class="bg-slate-800 text-slate-300 hover:text-white px-3 py-1.5 rounded-lg text-xs border border-slate-700">
+                            ตรวจสลิป
+                        </button>
+                        <button onclick="updateBookingStatus('${b.id}', 'APPROVED')" class="bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-bold px-3 py-1.5 rounded-lg text-xs">
+                            อนุมัติ
+                        </button>
+                        <button onclick="updateBookingStatus('${b.id}', 'REJECTED')" class="bg-rose-950 border border-rose-800 text-rose-300 hover:bg-rose-900 font-bold px-3 py-1.5 rounded-lg text-xs">
+                            ปฏิเสธ
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function toggleCourtLock(courtId) {
+            SoundFX.playClick();
+            appState.courts = appState.courts.map(c => {
+                if (c.id === courtId) {
+                    return { ...c, isLocked: !c.isLocked };
+                }
+                return c;
+            });
+            persistData();
+            renderAdminView();
+            showToast('อัปเดตสถานะการปิด/เปิดสนามเรียบร้อยแล้ว', 'info');
+        }
+
+        function updateBookingStatus(bookingId, status) {
+            SoundFX.playSuccess();
+            appState.bookings = appState.bookings.map(b => {
+                if (b.id === bookingId) {
+                    return { ...b, status };
+                }
+                return b;
+            });
+            persistData();
+            updateBadgeCount();
+            renderAdminView();
+            showToast(`อัปเดตสถานะรายการ ${bookingId} เป็น ${status === 'APPROVED' ? 'อนุมัติแล้ว' : 'ปฏิเสธ'}`, 'success');
+        }
+
+        function postAdminAnnouncement() {
+            const input = document.getElementById('admin-announcement-input');
+            const text = input.value.trim();
+            if (!text) return;
+
+            SoundFX.playSuccess();
+            appState.announcements.unshift(`📢 ${text}`);
+            persistData();
+            input.value = '';
+            showToast('โพสต์ประกาศใหม่ขึ้นหน้าแรกเรียบร้อยแล้ว', 'success');
+        }
+
+        // UTILITY HELPERS & TOASTS
+        function updateBadgeCount() {
+            const pendingCount = appState.bookings.filter(b => b.status === 'PENDING').length;
+            document.getElementById('booking-badge-count').textContent = pendingCount;
+            document.getElementById('mobile-badge-count').textContent = pendingCount;
+        }
+
+        function showToast(msg, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            
+            let bgClass = 'bg-slate-900 text-white border-slate-700';
+            if (type === 'success') bgClass = 'bg-emerald-950 text-emerald-300 border-emerald-800';
+            if (type === 'error') bgClass = 'bg-rose-950 text-rose-300 border-rose-800';
+
+            toast.className = `p-4 rounded-xl border shadow-2xl text-xs font-medium flex items-center space-x-2 transform transition duration-300 pointer-events-auto ${bgClass}`;
+            toast.innerHTML = `
+                <i class="fa-solid fa-circle-info text-base"></i>
+                <span>${msg}</span>
+            `;
+
+            container.appendChild(toast);
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        function copyToClipboard(text, msg) {
+            const tempInput = document.createElement('textarea');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            showToast(msg || 'คัดลอกลงคลิปบอร์ดแล้ว', 'success');
+        }
+
+        // INITIAL BOOTSTRAP
+        window.onload = function() {
+            setRole('GUEST');
+            updateBadgeCount();
+            switchTab('home');
+        };
+    </script>
+</body>
+</html>

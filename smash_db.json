@@ -1,0 +1,152 @@
+{
+  "users": [
+    {
+      "username": "admin",
+      "password": "admin123",
+      "role": "admin",
+      "name": "System Administrator"
+    },
+    {
+      "username": "user",
+      "password": "123456",
+      "role": "user",
+      "name": "ผู้ใช้งานทั่วไป"
+    }
+  ],
+  "rackets": [
+    {
+      "id": 1,
+      "brand": "Yonex",
+      "model": "Astrox 100ZZ",
+      "balance": "Head Heavy",
+      "flex": "Extra Stiff",
+      "style": "Attack",
+      "weight": "3U/4U",
+      "price": 6890
+    },
+    {
+      "id": 2,
+      "brand": "Yonex",
+      "model": "Nanoflare 1000Z",
+      "balance": "Head Light",
+      "flex": "Extra Stiff",
+      "style": "Speed",
+      "weight": "3U/4U",
+      "price": 6590
+    },
+    {
+      "id": 3,
+      "brand": "Yonex",
+      "model": "Arcsaber 11 Pro",
+      "balance": "Even Balance",
+      "flex": "Stiff",
+      "style": "Control",
+      "weight": "3U/4U",
+      "price": 6290
+    },
+    {
+      "id": 4,
+      "brand": "Victor",
+      "model": "Thruster Ryuga II Pro",
+      "balance": "Head Heavy",
+      "flex": "Stiff",
+      "style": "Attack",
+      "weight": "3U/4U",
+      "price": 6200
+    },
+    {
+      "id": 5,
+      "brand": "Victor",
+      "model": "Auraspeed 100X",
+      "balance": "Even Balance",
+      "flex": "Stiff",
+      "style": "Speed",
+      "weight": "3U/4U",
+      "price": 5800
+    },
+    {
+      "id": 6,
+      "brand": "Li-Ning",
+      "model": "Axforce 100",
+      "balance": "Head Heavy",
+      "flex": "Stiff",
+      "style": "Attack",
+      "weight": "3U/4U",
+      "price": 6900
+    },
+    {
+      "id": 7,
+      "brand": "Li-Ning",
+      "model": "Halbertec 9000",
+      "balance": "Even Balance",
+      "flex": "Medium-Stiff",
+      "style": "Control",
+      "weight": "3U/4U",
+      "price": 6800
+    },
+    {
+      "id": 8,
+      "brand": "VS",
+      "model": "Titan 1000",
+      "balance": "Head Heavy",
+      "flex": "Flexible",
+      "style": "Attack",
+      "weight": "4U",
+      "price": 1490
+    },
+    {
+      "id": 9,
+      "brand": "VS",
+      "model": "Blade 7000",
+      "balance": "Even Balance",
+      "flex": "Medium",
+      "style": "All-Around",
+      "weight": "4U",
+      "price": 1390
+    }
+  ],
+  "shoes": [
+    {
+      "brand": "Yonex",
+      "model": "Power Cushion 65Z3",
+      "type": "All-Around / Stability",
+      "price": 4590
+    },
+    {
+      "brand": "Yonex",
+      "model": "Aerus Z2",
+      "type": "Lightweight / Speed",
+      "price": 4990
+    },
+    {
+      "brand": "Victor",
+      "model": "P9200III Wide",
+      "type": "Max Cushion / Support Wide Fit",
+      "price": 4280
+    }
+  ],
+  "strings": [
+    {
+      "brand": "Yonex",
+      "model": "BG66 Ultimax",
+      "gauge": "0.65mm",
+      "feature": "High Repulsion / Sound",
+      "price": 320
+    },
+    {
+      "brand": "Yonex",
+      "model": "BG65",
+      "gauge": "0.70mm",
+      "feature": "Durability",
+      "price": 250
+    },
+    {
+      "brand": "Li-Ning",
+      "model": "No.1",
+      "gauge": "0.65mm",
+      "feature": "High Repulsion",
+      "price": 280
+    }
+  ],
+  "user_history": {}
+}
