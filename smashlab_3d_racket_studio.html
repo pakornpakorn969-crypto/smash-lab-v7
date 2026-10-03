@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="th" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMASH LAB // 3D ULTIMATE BADMINTON DATABASE & STUDIO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- THREE.JS 3D ENGINE & CONTROLS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <style>
+        body { background-color: #020617; color: #f8fafc; font-family: 'Kanit', sans-serif; overflow-x: hidden; }
+        #canvas3dBg { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 0; pointer-events: none; }
+        .cyber-glass { background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(20px); border: 1px solid rgba(56, 189, 248, 0.2); box-shadow: 0 0 35px rgba(2, 6, 23, 0.8); }
+        .grid-bg { background-size: 40px 40px; background-image: linear-gradient(to right, rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(to bottom, rgba(255, 255, 255, 0.03) 1px, transparent 1px); }
+        ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #020617; } ::-webkit-scrollbar-thumb { background: #06b6d4; border-radius: 10px; }
+        .glow-cyan { filter: drop-shadow(0 0 15px rgba(6, 182, 212, 0.6)); }
+        .glow-gold { filter: drop-shadow(0 0 15px rgba(234, 179, 8, 0.6)); }
+    </style>
+</head>
+<body class="grid-bg min-h-screen relative selection:bg-cyan-500 selection:text-black">
+    
+    <!-- Dynamic 3D Cyber Background Canvas -->
+    <div id="canvas3dBg"></div>
+
+    <div class="relative z-20">
+        <!-- NAVIGATION BAR -->
+        <nav class="bg-slate-950/80 backdrop-blur-2xl border-b border-cyan-500/20 sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+                <div class="flex items-center gap-3 cursor-pointer" onclick="switchTab('cover')">
+                    <div class="bg-gradient-to-tr from-cyan-500 via-emerald-400 to-teal-300 text-slate-950 p-2.5 rounded-xl shadow-lg shadow-cyan-500/30">
+                        <i class="fa-solid fa-cube text-2xl"></i>
+                    </div>
+                    <div>
+                        <div class="font-[Orbitron] font-black text-xl tracking-wider text-white">SMASH<span class="text-cyan-400">LAB 3D</span></div>
+                        <div class="text-[9px] text-emerald-400 font-mono uppercase">ULTIMATE 3D RACKET DATABASE (YONEX, VICTOR, LI-NING, VS, FELET)</div>
+                    </div>
+                </div>
+
+                <div class="hidden lg:flex items-center gap-1 bg-slate-900/90 p-1.5 rounded-2xl border border-slate-800">
+                    <button onclick="switchTab('cover')" class="px-4 py-2 rounded-xl text-xs font-semibold text-cyan-400 hover:text-white"><i class="fa-solid fa-house mr-1"></i>หน้าแรก</button>
+                    <button onclick="switchTab('viewer3d')" class="px-4 py-2 rounded-xl text-xs font-bold text-emerald-400 bg-emerald-950/50 border border-emerald-500/30 hover:text-white"><i class="fa-solid fa-vr-cardboard mr-1"></i>ห้องโชว์ไม้ 3D</button>
+                    <button onclick="switchTab('catalog')" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:text-white"><i class="fa-solid fa-store mr-1 text-purple-400"></i>คลังไม้ทั้งหมด (<span id="navTotalCount">0</span>)</button>
+                    <button onclick="switchTab('orders')" class="px-4 py-2 rounded-xl text-xs font-semibold text-amber-400 hover:text-white"><i class="fa-solid fa-receipt mr-1"></i>ตะกร้า / คำสั่งซื้อ</button>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <button onclick="openCartModal()" class="relative bg-slate-900 border border-slate-800 text-cyan-400 px-3.5 py-2 rounded-xl text-xs font-bold hover:border-cyan-500/50 transition">
+                        <i class="fa-solid fa-cart-shopping text-base"></i>
+                        <span id="cartCountBadge" class="absolute -top-1.5 -right-1.5 bg-rose-500 text-white text-[10px] w-5 h-5 rounded-full flex items-center justify-center font-bold">0</span>
+                    </button>
+                </div>
+            </div>
+        </nav>
+
+        <main class="max-w-7xl mx-auto px-4 py-8">
+            <!-- COVER SECTION -->
+            <div id="content-cover" class="space-y-8 py-6 text-center">
+                <div class="cyber-glass p-8 md:p-16 rounded-3xl space-y-6 border border-cyan-500/30 relative overflow-hidden">
+                    <span class="px-4 py-1.5 rounded-full bg-cyan-950 border border-cyan-500/50 text-cyan-400 text-xs font-mono"><i class="fa-solid fa-layer-group mr-1"></i> COMPLETE YONEX (PRO/TOUR/GAME/PLAY 3U/4U ALL GEN) + VICTOR + LI-NING + VS + FELET</span>
+                    <h1 class="text-3xl md:text-5xl font-black text-white font-[Orbitron]">SMASH LAB <span class="text-cyan-400">3D RACKET STUDIO</span></h1>
+                    <p class="text-slate-300 text-sm md:text-base max-w-3xl mx-auto leading-relaxed">
+                        ศูนย์รวมข้อมูลไม้แบดมินตันครบสมบูรณ์แบบที่สุด! ครอบคลุม **Yonex ทุกรุ่น ทุกซีรีส์ (Astrox 88D/88S, 100ZZ, Nanoflare 1000Z)** ตั้งแต่ **Gen 1, Gen 2 ถึง Gen 3 (2024)** และครบทุกระดับ **PRO, TOUR, GAME, PLAY** ทั้งน้ำหนัก **3U และ 4U** พร้อมด้วยไม้ตัวท็อปจาก **Victor, Li-Ning, VS, และ Felet**
+                    </p>
+                    <div class="flex flex-wrap justify-center gap-4 pt-4">
+                        <button onclick="switchTab('viewer3d')" class="bg-gradient-to-r from-cyan-500 to-emerald-400 text-slate-950 font-black px-8 py-3.5 rounded-xl text-sm font-[Orbitron] glow-cyan"><i class="fa-solid fa-vr-cardboard mr-1"></i> เปิดห้องโชว์ไม้ 3D</button>
+                        <button onclick="switchTab('catalog')" class="bg-slate-900 text-white font-bold px-8 py-3.5 rounded-xl text-sm border border-slate-800"><i class="fa-solid fa-list-check mr-1"></i> ดูคลังไม้แบดทั้งหมด</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 3D INTERACTIVE RACKET VIEWER STUDIO -->
+            <div id="content-viewer3d" class="hidden space-y-6">
+                <div class="cyber-glass p-6 md:p-8 rounded-3xl space-y-6">
+                    <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-slate-800 pb-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white font-[Orbitron] flex items-center gap-2">
+                                <i class="fa-solid fa-cube text-cyan-400"></i> 3D INTERACTIVE RACKET STUDIO
+                            </h2>
+                            <p class="text-xs text-slate-400">คลิกค้างเพื่อหมุน 360° / หมุน Scroll Wheel เพื่อซูม / เลือกปรับเปลี่ยนสเปกไม้เรียลไทม์</p>
+                        </div>
+
+                        <!-- BRAND & MODEL SELECTORS -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full md:w-auto">
+                            <div>
+                                <label class="text-[10px] text-cyan-400 font-mono block mb-1">แบรนด์ (Brand):</label>
+                                <select id="brandFilter3D" onchange="filter3DRacketsByBrand()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none w-full font-bold">
+                                    <option value="ALL">ALL BRANDS (ทั้งหมด)</option>
+                                    <option value="Yonex" selected>YONEX</option>
+                                    <option value="Victor">VICTOR</option>
+                                    <option value="Li-Ning">LI-NING</option>
+                                    <option value="VS">VS</option>
+                                    <option value="Felet">FELET</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="text-[10px] text-cyan-400 font-mono block mb-1">เลือกรุ่นไม้ 3D (Model):</label>
+                                <select id="racket3dSelector" onchange="update3DRacketModel()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none w-full font-bold">
+                                    <!-- Options populated by JS -->
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3D DISPLAY CONTAINER & SPECIFICATIONS PANEL -->
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-center">
+                        <!-- THREE.JS WEBGL VIEWPORT -->
+                        <div class="lg:col-span-2 bg-slate-950 rounded-2xl border border-cyan-500/30 p-4 relative h-[520px] flex items-center justify-center overflow-hidden shadow-2xl">
+                            <div id="racket3DViewport" class="w-full h-full cursor-grab active:cursor-grabbing"></div>
+                            
+                            <!-- Overlay Controls HUD -->
+                            <div class="absolute bottom-4 left-4 flex flex-wrap gap-2">
+                                <div class="bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-[10px] text-cyan-400 font-mono">
+                                    <i class="fa-solid fa-hand-pointer mr-1"></i> ROTATE / ZOOM / PAN
+                                </div>
+                                <button onclick="toggleAutoRotate3D()" id="btnAutoRotate" class="bg-cyan-950/80 hover:bg-cyan-900 border border-cyan-500/40 text-cyan-400 px-3 py-1.5 rounded-lg text-[10px] font-bold font-mono">
+                                    <i class="fa-solid fa-rotate mr-1"></i> Auto Rotation: ON
+                                </button>
+                            </div>
+
+                            <div class="absolute top-4 right-4 bg-slate-900/80 backdrop-blur-md px-3 py-1.5 rounded-lg border border-slate-800 text-[10px] text-emerald-400 font-mono">
+                                <i class="fa-solid fa-microchip mr-1"></i> THREE.JS WEBGL RENDERER
+                            </div>
+                        </div>
+
+                        <!-- RACKET SPECIFICATIONS CARD -->
+                        <div id="racket3dSpecsPanel" class="bg-slate-950/90 p-6 rounded-2xl border border-slate-800 space-y-4 font-mono relative overflow-hidden">
+                            <div class="flex justify-between items-center">
+                                <span id="specBrand" class="px-2.5 py-1 rounded bg-cyan-950 border border-cyan-500/40 text-cyan-400 text-xs font-bold uppercase">YONEX</span>
+                                <span id="specWeight" class="px-2.5 py-1 rounded bg-emerald-950 border border-emerald-500/40 text-emerald-400 text-xs font-bold">4U</span>
+                            </div>
+
+                            <h3 id="specName" class="text-xl font-bold text-white font-[Kanit]">Astrox 88D Pro (Gen 3)</h3>
+                            <div class="text-3xl font-black text-amber-400 font-[Orbitron]" id="specPrice">6,890 ฿</div>
+                            
+                            <div class="space-y-2.5 border-t border-b border-slate-900 py-3 text-xs">
+                                <div class="flex justify-between"><span class="text-slate-500">ระดับ (Tier):</span><span id="specTier" class="text-cyan-400 font-bold">PRO</span></div>
+                                <div class="flex justify-between"><span class="text-slate-500">รุ่น / Generation:</span><span id="specGen" class="text-slate-300">Gen 3 (2024)</span></div>
+                                <div class="flex justify-between"><span class="text-slate-500">จุดบาลานซ์ (Balance):</span><span id="specBalance" class="text-white">Head Heavy</span></div>
+                                <div class="flex justify-between"><span class="text-slate-500">ความแข็งก้าน (Flex):</span><span id="specFlex" class="text-white">Stiff</span></div>
+                                <div class="flex justify-between"><span class="text-slate-500">สไตล์การเล่น:</span><span id="specStyle" class="text-emerald-400 font-bold">Power / Attacking</span></div>
+                            </div>
+
+                            <p id="specDesc" class="text-xs text-slate-400 font-[Kanit] leading-relaxed">รายละเอียดสเปกและจุดเด่นของไม้...</p>
+
+                            <button id="btnAddToCart3D" onclick="" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black py-3 rounded-xl text-xs font-[Orbitron] glow-cyan transition">
+                                <i class="fa-solid fa-cart-plus mr-1"></i> เพิ่มไม้รุ่นนี้ลงตะกร้า
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CATALOG & SEARCH SECTION -->
+            <div id="content-catalog" class="hidden space-y-6">
+                <div class="cyber-glass p-6 md:p-8 rounded-3xl space-y-6">
+                    <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 border-b border-slate-800 pb-4">
+                        <div>
+                            <h2 class="text-2xl font-bold text-white font-[Orbitron]"><i class="fa-solid fa-store text-purple-400 mr-2"></i>คลังไม้แบดมินตันทั้งหมด</h2>
+                            <span id="catalogCount" class="text-xs text-cyan-400 font-mono">กำลังโหลด...</span>
+                        </div>
+                        
+                        <!-- MULTI-FILTER BAR -->
+                        <div class="flex flex-wrap gap-2 w-full lg:w-auto">
+                            <input type="text" id="searchInput" oninput="filterCatalog()" placeholder="🔍 ค้นหารุ่น (88D, 100ZZ, Ryuga, 3U, Pro...)" class="bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white focus:border-cyan-500 outline-none w-full sm:w-64">
+                            <select id="brandFilterCat" onchange="filterCatalog()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none">
+                                <option value="ALL">ทุกแบรนด์</option>
+                                <option value="Yonex">Yonex</option>
+                                <option value="Victor">Victor</option>
+                                <option value="Li-Ning">Li-Ning</option>
+                                <option value="VS">VS</option>
+                                <option value="Felet">Felet</option>
+                            </select>
+                            <select id="tierFilterCat" onchange="filterCatalog()" class="bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:border-cyan-500 outline-none">
+                                <option value="ALL">ทุกระดับ Tier</option>
+                                <option value="PRO">PRO</option>
+                                <option value="TOUR">TOUR</option>
+                                <option value="GAME">GAME</option>
+                                <option value="PLAY">PLAY</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div id="catalogGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4"></div>
+                </div>
+            </div>
+
+            <!-- ORDERS & CART SECTION -->
+            <div id="content-orders" class="hidden space-y-6">
+                <div class="cyber-glass p-6 md:p-8 rounded-3xl space-y-6">
+                    <h2 class="text-2xl font-bold text-white font-[Orbitron]"><i class="fa-solid fa-receipt text-amber-400 mr-2"></i>ประวัติคำสั่งซื้อ</h2>
+                    <div id="userOrdersList" class="space-y-4 text-xs text-slate-300">
+                        <div class="text-center py-8 text-slate-500">ยังไม่มีรายการสั่งซื้อย้อนหลัง</div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- CART MODAL -->
+    <div id="cartModal" class="hidden fixed inset-0 z-50 bg-slate-950/90 backdrop-blur-md flex items-center justify-center p-4">
+        <div class="cyber-glass p-8 rounded-3xl max-w-lg w-full relative border border-cyan-500/40 space-y-6">
+            <button onclick="closeCartModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
+            <h3 class="text-2xl font-black text-white font-[Orbitron]"><i class="fa-solid fa-cart-shopping text-cyan-400"></i> ตะกร้าสินค้าของคุณ</h3>
+            <div id="cartItemsList" class="space-y-3 max-h-60 overflow-y-auto pr-2"></div>
+            <div class="border-t border-slate-800 pt-4 flex justify-between items-center font-bold text-white text-lg">
+                <span>ราคารวมทั้งหมด:</span>
+                <span id="cartTotalPrice" class="text-amber-400 font-[Orbitron]">0 ฿</span>
+            </div>
+            <button onclick="confirmOrderPayment()" class="w-full bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-black py-3 rounded-xl text-xs font-[Orbitron]">ยืนยันคำสั่งซื้อ / ชำระเงิน</button>
+        </div>
+    </div>
+
+    <script>
+        // ==================== MASTER RACKETS DATABASE ====================
+        // Yonex Play, Game, Tour, Pro (Gen 1, Gen 2, Gen 3, 3U, 4U) + Victor + Li-Ning + VS + Felet
+        const racketsDatabase = [
+            // ---------- YONEX ASTROX 88D (GEN 1) ----------
+            { id: 1, brand: 'Yonex', name: 'Astrox 88D (Gen 1)', price: 6290, style: 'power', balance: 'Head Heavy', flex: 'Stiff', weight: '3U', gen: 'Gen 1 (2018)', tier: 'PRO', desc: 'รุ่นบุกเบิกสายบุกเกมคู่ ตบปักหนักแน่นสูงสุดด้วยน้ำหนัก 3U สีแดงเข้ม Ruby Red', color: 0xd97706 },
+            { id: 2, brand: 'Yonex', name: 'Astrox 88D (Gen 1)', price: 6290, style: 'power', balance: 'Head Heavy', flex: 'Stiff', weight: '4U', gen: 'Gen 1 (2018)', tier: 'PRO', desc: 'รุ่นบุกเบิกสายบุกเกมคู่ น้ำหนัก 4U สวิงคล่องตัว ตบปักแม่นยำ', color: 0xd97706 },
+
+            // ---------- YONEX ASTROX 88D (GEN 2 - 2021) ----------
+            { id: 3, brand: 'Yonex', name: 'Astrox 88D Pro (Gen 2)', price: 6590, style: 'power', balance: 'Head Heavy', flex: 'Extra Stiff', weight: '3U', gen: 'Gen 2 (2021)', tier: 'PRO', desc: 'ตัวท็อป Gen 2 น้ำหนัก 3U เสริม Volume Cut Resin เพิ่มสวีทสปอต ตบหนักสะท้าน', color: 0x06b6d4 },
+            { id: 4, brand: 'Yonex', name: 'Astrox 88D Pro (Gen 2)', price: 6590, style: 'power', balance: 'Head Heavy', flex: 'Stiff', weight: '4U', gen: 'Gen 2 (2021)', tier: 'PRO', desc: 'ตัวท็อป Gen 2 น้ำหนัก 4U สมดุลระหว่างพลังตบและความคล่องตัว', color: 0x06b6d4 },
+            { id: 5, brand: 'Yonex', name: 'Astrox 88D Tour (Gen 2)', price: 4590, style: 'power', balance: 'Head Heavy', flex: 'Stiff', weight: '3U', gen: 'Gen 2 (2021)', tier: 'TOUR', desc: 'รุ่นแข่งขันผลิตไต้หวัน สเปกใกล้ Pro 90% น้ำหนัก 3U ให้พลังตบสูง', color: 0x0284c7 },
+            { id: 6, brand: 'Yonex', name: 'Astrox 88D Tour (Gen 2)', price: 4590, style: 'power', balance: 'Head Heavy', flex: 'Stiff', weight: '4U', gen: 'Gen 2 (2021)', tier: 'TOUR', desc: 'รุ่นแข่งขันผลิตไต้หวัน น้ำหนัก 4U สวิงง่าย ตีสบายมือ', color: 0x0284c7 },
+            { id: 7, brand: 'Yonex', name: 'Astrox 88D Game (Gen 2)', price: 3390, style: 'power', balance: 'Head Heavy', flex: 'Medium', weight: '4U', gen: 'Gen 2 (2021)', tier: 'GAME', desc: 'สำหรับผู้เล่นระดับกลาง ก้านปานกลาง ตีง่าย ช่วยส่งแรงถึงหลังคอร์ด', color: 0x38bdf8 },
+            { id: 8, brand: 'Yonex', name: 'Astrox 88D Play (Gen 2)', price: 2190, style: 'power', balance: 'Head Heavy', flex: 'Flexible', weight: '4U', gen: 'Gen 2 (2021)', tier: 'PLAY', desc: 'สำหรับผู้เล่นเริ่มต้น ก้านสปริงตีกินแรงน้อย ทนทานสูง', color: 0x7dd3fc },
+
+            // ---------- YONEX ASTROX 88D (GEN 3 - 2024 LATEST) ----------
+            { id: 9, brand: 'Yonex', name: 'Astrox 88D Pro (Gen 3 - 2024)', price: 6890, style: 'power', balance: 'Head Heavy', flex: 'Extra Stiff', weight: '3U', gen: 'Gen 3 (2024)', tier: 'PRO', desc: 'รุ่นล่าสุดปี 2024 เสริม 2G-Namd Flex Force พลังตบหนักแน่นสูงสุด ระดับนักกีฬาโลก', color: 0x0ea5e9 },
+            { id: 10, brand: 'Yonex', name: 'Astrox 88D Pro (Gen 3 - 2024)', price: 6890, style: 'power', balance: 'Head Heavy', flex: 'Stiff', weight: '4U', gen: 'Gen 3 (2024)', tier: 'PRO', desc: 'รุ่นล่าสุดปี 2024 น้ำหนัก 4U สมดุลระหว่างสปีดและการตบปักอย่างลงตัว', color: 0x0ea5e9 },
+            { id: 11, brand: 'Yonex', name: 'Astrox 88D Tour (Gen 3 - 2024)', price: 4790, style: 'power', balance: 'Head Heavy', flex: 'Stiff', weight: '3U', gen: 'Gen 3 (2024)', tier: 'TOUR', desc: 'Gen 3 ไต้หวัน 3U หัวหนักแน่น ตบทำแต้มเด็ดขาด', color: 0x0284c7 },
+            { id: 12, brand: 'Yonex', name: 'Astrox 88D Tour (Gen 3 - 2024)', price: 4790, style: 'power', balance: 'Head Heavy', flex: 'Stiff', weight: '4U', gen: 'Gen 3 (2024)', tier: 'TOUR', desc: 'Gen 3 ไต้หวัน 4U เฟรมเสถียร ตบปักแม่นยำ', color: 0x0284c7 },
+            { id: 13, brand: 'Yonex', name: 'Astrox 88D Game (Gen 3 - 2024)', price: 3490, style: 'power', balance: 'Head Heavy', flex: 'Medium', weight: '4U', gen: 'Gen 3 (2024)', tier: 'GAME', desc: 'Gen 3 สำหรับมือกลาง ตีง่าย ตบสนุก ไม่เมื่อยแขน', color: 0x38bdf8 },
+            { id: 14, brand: 'Yonex', name: 'Astrox 88D Play (Gen 3 - 2024)', price: 2290, style: 'power', balance: 'Head Heavy', flex: 'Flexible', weight: '4U', gen: 'Gen 3 (2024)', tier: 'PLAY', desc: 'Gen 3 สำหรับมือใหม่ ตีเคลียร์หลังคอร์ดง่าย ควบคุมลูกสะดวก', color: 0x7dd3fc },
+
+            // ---------- YONEX ASTROX 88S (GEN 1, 2, 3 - SPEED/FRONT COURT) ----------
+            { id: 15, brand: 'Yonex', name: 'Astrox 88S Pro (Gen 2)', price: 6590, style: 'speed', balance: 'Even Balance', flex: 'Stiff', weight: '4U', gen: 'Gen 2 (2021)', tier: 'PRO', desc: 'ไม้สายคุมเกมหน้าคอร์ด ดักตัดลูกเน็ตคมกริบ สวิงหน้าไม้ไว', color: 0x10b981 },
+            { id: 16, brand: 'Yonex', name: 'Astrox 88S Pro (Gen 3 - 2024)', price: 6890, style: 'speed', balance: 'Even Balance', flex: 'Stiff', weight: '3U', gen: 'Gen 3 (2024)', tier: 'PRO', desc: 'Gen 3 น้ำหนัก 3U สำหรับสายหน้าคอร์ดที่ต้องการน้ำหนักตบดักทางแน่นๆ', color: 0x059669 },
+            { id: 17, brand: 'Yonex', name: 'Astrox 88S Pro (Gen 3 - 2024)', price: 6890, style: 'speed', balance: 'Even Balance', flex: 'Stiff', weight: '4U', gen: 'Gen 3 (2024)', tier: 'PRO', desc: 'Gen 3 น้ำหนัก 4U หน้าไม้ไวที่สุดในซีรีส์ ดักบีบเกมคู่ได้อย่างสมบูรณ์แบบ', color: 0x059669 },
+            { id: 18, brand: 'Yonex', name: 'Astrox 88S Tour (Gen 3 - 2024)', price: 4790, style: 'speed', balance: 'Even Balance', flex: 'Stiff', weight: '4U', gen: 'Gen 3 (2024)', tier: 'TOUR', desc: 'Gen 3 คุมจังหวะเกมคู่หน้าคอร์ดได้อย่างเหนือชั้น ผลิตไต้หวัน', color: 0x34d399 },
+            { id: 19, brand: 'Yonex', name: 'Astrox 88S Game (Gen 3 - 2024)', price: 3490, style: 'speed', balance: 'Even Balance', flex: 'Medium', weight: '4U', gen: 'Gen 3 (2024)', tier: 'GAME', desc: 'Gen 3 หน้าไม้ไว ตีง่าย เหมาะสำหรับผู้เล่นคู่หน้า', color: 0x6ee7b7 },
+            { id: 20, brand: 'Yonex', name: 'Astrox 88S Play (Gen 3 - 2024)', price: 2290, style: 'speed', balance: 'Even Balance', flex: 'Flexible', weight: '4U', gen: 'Gen 3 (2024)', tier: 'PLAY', desc: 'Gen 3 ไม้เริ่มต้นสำหรับสายเล่นเร็ว คล่องตัวสูง', color: 0xa7f3d0 },
+
+            // ---------- YONEX ASTROX 100 ZZ & NANOFLARE 1000Z ----------
+            { id: 21, brand: 'Yonex', name: 'Astrox 100 ZZ', price: 6890, style: 'power', balance: 'Head Heavy', flex: 'Extra Stiff', weight: '3U', gen: 'Gen 1', tier: 'PRO', desc: 'ที่สุดของไม้สายตบ ก้าน Hyper Slim Shaft เล็กและแข็งที่สุดในโลก', color: 0x1e3a8a },
+            { id: 22, brand: 'Yonex', name: 'Astrox 100 ZZ', price: 6890, style: 'power', balance: 'Head Heavy', flex: 'Extra Stiff', weight: '4U', gen: 'Gen 1', tier: 'PRO', desc: 'Astrox 100 ZZ น้ำหนัก 4U สวิงคล่อง ตบปักหัวแทบพื้นยอดนิยม', color: 0x1e3a8a },
+            { id: 23, brand: 'Yonex', name: 'Nanoflare 1000 Z', price: 6590, style: 'speed', balance: 'Head Light', flex: 'Extra Stiff', weight: '4U', gen: 'Gen 1', tier: 'PRO', desc: 'เจ้าแห่งสถิติความเร็วลูกตบสูงสุดในโลก ก้านแข็งสปีดไวจัด', color: 0xeab308 },
+
+            // ---------- VICTOR ----------
+            { id: 24, brand: 'Victor', name: 'Thruster Ryuga II Pro', price: 6480, style: 'power', balance: 'Head Heavy', flex: 'Stiff', weight: '3U', gen: 'Gen 2', tier: 'PRO', desc: 'ไม้สายตบตัวโหด WES 2.0 น้ำหนัก 3U ตบหนักสั่นสะท้านน้อย', color: 0xf43f5e },
+            { id: 25, brand: 'Victor', name: 'Thruster Ryuga II Pro', price: 6480, style: 'power', balance: 'Head Heavy', flex: 'Stiff', weight: '4U', gen: 'Gen 2', tier: 'PRO', desc: 'ไม้สายตบตัวโหด WES 2.0 น้ำหนัก 4U สวิงตบต่อเนื่องได้รวดเร็ว', color: 0xf43f5e },
+            { id: 26, brand: 'Victor', name: 'Auraspeed 100X', price: 6380, style: 'speed', balance: 'Head Light', flex: 'Stiff', weight: '4U', gen: 'Gen 1', tier: 'PRO', desc: 'ไม้สปีดตัวท็อป 4U หน้าไม้ไวสำหรับการสวนกลับในเกมคู่', color: 0xe11d48 },
+
+            // ---------- LI-NING ----------
+            { id: 27, brand: 'Li-Ning', name: 'Axforce 100 (Dragon)', price: 7290, style: 'power', balance: 'Head Heavy', flex: 'Stiff', weight: '3U', gen: 'Gen 1', tier: 'PRO', desc: 'ที่สุดของไม้สายตบ Li-Ning เทคโนโลยีเฟรมกล่องสเกล พลังตบรุนแรง', color: 0xca8a04 },
+            { id: 28, brand: 'Li-Ning', name: 'Halbertec 9000', price: 6900, style: 'control', balance: 'Even Balance', flex: 'Medium-Stiff', weight: '4U', gen: 'Gen 1', tier: 'PRO', desc: 'Halbertec 9000 4U คอนโทรลดีเยี่ยม เล่นได้รอบด้าน บาลานซ์สมบูรณ์แบบ', color: 0xd97706 },
+
+            // ---------- VS ----------
+            { id: 29, brand: 'VS', name: 'YouDragon 8000', price: 1890, style: 'power', balance: 'Head Heavy', flex: 'Medium', weight: '4U', gen: 'Gen 1', tier: 'PLAY', desc: 'ดีไซน์มังกรสุดเท่ ตบสนุก เหมาะกับผู้เล่นทุกระดับ คุ้มค่าที่สุด', color: 0x16a34a },
+
+            // ---------- FELET ----------
+            { id: 30, brand: 'Felet', name: 'Woven TJ Power', price: 3290, style: 'power', balance: 'Head Heavy', flex: 'Stiff', weight: '4U', gen: 'Gen 1', tier: 'TOUR', desc: 'เฟรม Woven Carbon ขึ้นปอนด์ได้สูงถึง 35-42 lbs ทนทานสายตบโหด', color: 0x9333ea }
+        ];
+
+        let cart = [];
+        let autoRotate3D = true;
+
+        // THREE.JS 3D ENGINE GLOBAL VARIABLES
+        let scene3d, camera3d, renderer3d, controls3d, racketGroup3d, metallicMaterial3d;
+
+        // INITIALIZE DYNAMIC 3D BACKGROUND
+        function init3DBackground() {
+            const container = document.getElementById('canvas3dBg');
+            const scene = new THREE.Scene();
+            const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1000);
+            camera.position.z = 30;
+
+            const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            container.appendChild(renderer.domElement);
+
+            // Particles Mesh Grid
+            const geo = new THREE.BufferGeometry();
+            const count = 500;
+            const pos = new Float32Array(count * 3);
+            for(let i = 0; i < count * 3; i++) pos[i] = (Math.random() - 0.5) * 70;
+            geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+
+            const mat = new THREE.PointsMaterial({ size: 0.25, color: 0x06b6d4, transparent: true, opacity: 0.5 });
+            const points = new THREE.Points(geo, mat);
+            scene.add(points);
+
+            function animateBg() {
+                requestAnimationFrame(animateBg);
+                points.rotation.y += 0.0008;
+                points.rotation.x += 0.0004;
+                renderer.render(scene, camera);
+            }
+            animateBg();
+
+            window.addEventListener('resize', () => {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            });
+        }
+
+        // INITIALIZE THREE.JS 3D BADMINTON RACKET STUDIO
+        function init3DRacketViewer() {
+            const container = document.getElementById('racket3DViewport');
+            if(!container) return;
+
+            scene3d = new THREE.Scene();
+            camera3d = new THREE.PerspectiveCamera(45, container.clientWidth / container.clientHeight, 0.1, 1000);
+            camera3d.position.set(0, 0, 15);
+
+            renderer3d = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer3d.setSize(container.clientWidth, container.clientHeight);
+            renderer3d.setPixelRatio(window.devicePixelRatio);
+            renderer3d.shadowMap.enabled = true;
+            container.innerHTML = '';
+            container.appendChild(renderer3d.domElement);
+
+            // ORBIT CONTROLS FOR MOUSE ROTATION & ZOOM
+            controls3d = new THREE.OrbitControls(camera3d, renderer3d.domElement);
+            controls3d.enableDamping = true;
+            controls3d.dampingFactor = 0.05;
+
+            // STUDIO LIGHTING SETUP
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.9);
+            scene3d.add(ambientLight);
+
+            const cyanPoint = new THREE.PointLight(0x06b6d4, 2.5, 50);
+            cyanPoint.position.set(10, 10, 10);
+            scene3d.add(cyanPoint);
+
+            const emeraldPoint = new THREE.PointLight(0x10b981, 2, 50);
+            emeraldPoint.position.set(-10, -10, 10);
+            scene3d.add(emeraldPoint);
+
+            const topDirectional = new THREE.DirectionalLight(0xffffff, 1.2);
+            topDirectional.position.set(0, 15, 5);
+            scene3d.add(topDirectional);
+
+            // BUILD 3D RACKET GEOMETRY GROUP
+            racketGroup3d = new THREE.Group();
+
+            metallicMaterial3d = new THREE.MeshStandardMaterial({
+                color: 0x06b6d4,
+                metalness: 0.85,
+                roughness: 0.25
+            });
+
+            const handleMat = new THREE.MeshStandardMaterial({ color: 0x0f172a, roughness: 0.95 });
+            const capMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.5 });
+            const stringMat = new THREE.MeshBasicMaterial({ color: 0x38bdf8, transparent: true, opacity: 0.55 });
+
+            // 1. HEAD FRAME (Torus)
+            const headGeo = new THREE.TorusGeometry(2.8, 0.14, 16, 60);
+            const headMesh = new THREE.Mesh(headGeo, metallicMaterial3d);
+            headMesh.scale.set(0.85, 1.18, 1);
+            headMesh.position.y = 3.3;
+            racketGroup3d.add(headMesh);
+
+            // 2. 3D STRINGS GRID
+            const stringsGroup = new THREE.Group();
+            for(let x = -2.0; x <= 2.0; x += 0.32) {
+                const lineGeo = new THREE.CylinderGeometry(0.012, 0.012, 5.6, 8);
+                const line = new THREE.Mesh(lineGeo, stringMat);
+                line.position.set(x, 3.3, 0);
+                stringsGroup.add(line);
+            }
+            for(let y = 0.6; y <= 6.0; y += 0.34) {
+                const lineGeo = new THREE.CylinderGeometry(0.012, 0.012, 4.2, 8);
+                const line = new THREE.Mesh(lineGeo, stringMat);
+                line.rotation.z = Math.PI / 2;
+                line.position.set(0, y, 0);
+                stringsGroup.add(line);
+            }
+            racketGroup3d.add(stringsGroup);
+
+            // 3. T-JOINT CONNECTOR
+            const tJointGeo = new THREE.CylinderGeometry(0.2, 0.14, 0.6, 16);
+            const tJointMesh = new THREE.Mesh(tJointGeo, metallicMaterial3d);
+            tJointMesh.position.y = 0.2;
+            racketGroup3d.add(tJointMesh);
+
+            // 4. SLIM SHAFT
+            const shaftGeo = new THREE.CylinderGeometry(0.09, 0.09, 5.0, 16);
+            const shaftMesh = new THREE.Mesh(shaftGeo, metallicMaterial3d);
+            shaftMesh.position.y = -2.3;
+            racketGroup3d.add(shaftMesh);
+
+            // 5. CONTROL SUPPORT CAP & GRIP HANDLE
+            const capGeo = new THREE.CylinderGeometry(0.18, 0.26, 0.5, 16);
+            const capMesh = new THREE.Mesh(capGeo, capMat);
+            capMesh.position.y = -4.95;
+            racketGroup3d.add(capMesh);
+
+            const handleGeo = new THREE.CylinderGeometry(0.26, 0.29, 2.3, 12);
+            const handleMesh = new THREE.Mesh(handleGeo, handleMat);
+            handleMesh.position.y = -6.2;
+            racketGroup3d.add(handleMesh);
+
+            scene3d.add(racketGroup3d);
+
+            // ANIMATION & RENDER LOOP
+            function renderLoop() {
+                requestAnimationFrame(renderLoop);
+                controls3d.update();
+                if(autoRotate3D && racketGroup3d) {
+                    racketGroup3d.rotation.y += 0.008;
+                }
+                renderer3d.render(scene3d, camera3d);
+            }
+            renderLoop();
+        }
+
+        function toggleAutoRotate3D() {
+            autoRotate3D = !autoRotate3D;
+            document.getElementById('btnAutoRotate').innerHTML = `<i class="fa-solid fa-rotate mr-1"></i> Auto Rotation: ${autoRotate3D ? 'ON' : 'OFF'}`;
+        }
+
+        function filter3DRacketsByBrand() {
+            const selectedBrand = document.getElementById('brandFilter3D').value;
+            const filtered = selectedBrand === 'ALL' 
+                ? racketsDatabase 
+                : racketsDatabase.filter(r => r.brand === selectedBrand);
+            
+            populate3DSelector(filtered);
+        }
+
+        function populate3DSelector(items = null) {
+            const list = items || racketsDatabase;
+            const sel = document.getElementById('racket3dSelector');
+            sel.innerHTML = list.map(r => `<option value="${r.id}">[${r.brand}] ${r.name} - ${r.weight} (${r.tier})</option>`).join('');
+            if(list.length > 0) update3DRacketModel();
+        }
+
+        function update3DRacketModel() {
+            const id = parseInt(document.getElementById('racket3dSelector').value);
+            const r = racketsDatabase.find(item => item.id === id);
+            if(!r) return;
+
+            document.getElementById('specBrand').innerText = r.brand;
+            document.getElementById('specName').innerText = r.name;
+            document.getElementById('specPrice').innerText = `${r.price.toLocaleString()} ฿`;
+            document.getElementById('specWeight').innerText = r.weight;
+            document.getElementById('specBalance').innerText = r.balance;
+            document.getElementById('specFlex').innerText = r.flex;
+            document.getElementById('specTier').innerText = r.tier;
+            document.getElementById('specGen').innerText = r.gen;
+            document.getElementById('specStyle').innerText = r.style.toUpperCase();
+            document.getElementById('specDesc').innerText = r.desc;
+            document.getElementById('btnAddToCart3D').setAttribute('onclick', `addToCart(${r.id})`);
+
+            // Dynamically change 3D Metallic Color based on Brand & Model
+            if(metallicMaterial3d) {
+                metallicMaterial3d.color.setHex(r.color || 0x06b6d4);
+            }
+        }
+
+        function switchTab(tab) {
+            ['cover','viewer3d','catalog','orders'].forEach(t => {
+                const el = document.getElementById(`content-${t}`);
+                if(el) { if(t === tab) el.classList.remove('hidden'); else el.classList.add('hidden'); }
+            });
+            if(tab === 'viewer3d') setTimeout(init3DRacketViewer, 100);
+        }
+
+        function filterCatalog() {
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const brand = document.getElementById('brandFilterCat').value;
+            const tier = document.getElementById('tierFilterCat').value;
+
+            const filtered = racketsDatabase.filter(r => {
+                const matchSearch = r.name.toLowerCase().includes(search) || r.brand.toLowerCase().includes(search) || r.weight.toLowerCase().includes(search);
+                const matchBrand = brand === 'ALL' || r.brand === brand;
+                const matchTier = tier === 'ALL' || r.tier === tier;
+                return matchSearch && matchBrand && matchTier;
+            });
+
+            renderCatalog(filtered);
+        }
+
+        function renderCatalog(items) {
+            document.getElementById('catalogCount').innerText = `แสดงสินค้าทั้งหมด ${items.length} รายการ`;
+            document.getElementById('catalogGrid').innerHTML = items.map(r => `
+                <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3 hover:border-cyan-500/50 transition">
+                    <div class="flex justify-between items-center text-[10px]">
+                        <span class="text-cyan-400 font-mono font-bold uppercase">${r.brand} // ${r.gen}</span>
+                        <span class="px-2 py-0.5 rounded bg-cyan-950 border border-cyan-500/30 text-cyan-400 font-bold font-mono">${r.weight}</span>
+                    </div>
+                    <div>
+                        <h4 class="text-xs font-bold text-white font-[Kanit] leading-snug">${r.name}</h4>
+                        <span class="text-[9px] px-1.5 py-0.5 rounded bg-slate-900 text-slate-400 font-mono inline-block mt-1">${r.tier} LINE</span>
+                    </div>
+                    <p class="text-[10px] text-slate-400 line-clamp-2">${r.desc}</p>
+                    <div class="flex justify-between items-center pt-2 border-t border-slate-900">
+                        <span class="text-sm font-black text-amber-400 font-[Orbitron]">${r.price.toLocaleString()} ฿</span>
+                        <button onclick="addToCart(${r.id})" class="bg-cyan-500/20 text-cyan-400 hover:bg-cyan-500 hover:text-slate-950 font-bold px-3 py-1.5 rounded-xl text-xs transition">
+                            <i class="fa-solid fa-cart-plus"></i> เพิ่ม
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addToCart(id) {
+            const item = racketsDatabase.find(r => r.id === id);
+            if(item) {
+                cart.push(item);
+                updateCartBadge();
+                alert(`เพิ่ม "${item.name} (${item.weight})" ลงในตะกร้าเรียบร้อยแล้ว!`);
+            }
+        }
+
+        function updateCartBadge() {
+            document.getElementById('cartCountBadge').innerText = cart.length;
+        }
+
+        function openCartModal() {
+            const list = document.getElementById('cartItemsList');
+            if(cart.length === 0) {
+                list.innerHTML = `<div class="text-center py-6 text-slate-500 text-xs">ไม่มีสินค้าในตะกร้า</div>`;
+            } else {
+                list.innerHTML = cart.map((item, idx) => `
+                    <div class="flex justify-between items-center bg-slate-900 p-3 rounded-xl text-xs">
+                        <div>
+                            <div class="font-bold text-white">${item.name}</div>
+                            <div class="text-[10px] text-cyan-400 font-mono">${item.brand} - ${item.weight} (${item.tier})</div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="font-bold text-amber-400 font-[Orbitron]">${item.price.toLocaleString()} ฿</span>
+                            <button onclick="removeFromCart(${idx})" class="text-rose-400 hover:text-rose-300"><i class="fa-solid fa-trash"></i></button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            document.getElementById('cartTotalPrice').innerText = `${total.toLocaleString()} ฿`;
+            document.getElementById('cartModal').classList.remove('hidden');
+        }
+
+        function removeFromCart(index) {
+            cart.splice(index, 1);
+            updateCartBadge();
+            openCartModal();
+        }
+
+        function closeCartModal() {
+            document.getElementById('cartModal').classList.add('hidden');
+        }
+
+        function confirmOrderPayment() {
+            if(cart.length === 0) { alert('กรุณาเลือกสินค้าลงตะกร้าก่อนครับ'); return; }
+            alert('ทำรายการสั่งซื้อสำเร็จ! ขอบคุณที่ใช้บริการ Smash Lab 3D Studio');
+            cart = [];
+            updateCartBadge();
+            closeCartModal();
+            switchTab('orders');
+        }
+
+        // INIT APPLICATION
+        window.addEventListener('DOMContentLoaded', () => {
+            init3DBackground();
+            document.getElementById('navTotalCount').innerText = racketsDatabase.length;
+            renderCatalog(racketsDatabase);
+            populate3DSelector();
+        });
+    </script>
+</body>
+</html>

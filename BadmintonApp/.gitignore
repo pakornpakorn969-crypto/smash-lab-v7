@@ -1,0 +1,6 @@
+smashlab.db
+static/uploads/*
+!static/uploads/.gitkeep
+__pycache__/
+.env
+*.pyc
