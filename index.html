@@ -971,6 +971,26 @@
     </script>
 </body>
 </html>
+<head>
+    <!-- 1. เชื่อมต่อ Web Manifest (สำหรับ Android/Chrome) -->
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#0ea5e9">
+
+    <!-- 2. ตั้งค่าสำหรับ iOS Safari (iPhone/iPad) -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Smash Lab">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+
+    <!-- 3. ลงทะเบียน Service Worker -->
+    <script>
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+          navigator.serviceWorker.register("{{ url_for('static', filename='sw.js') }}");
+        });
+      }
+    </script>
+</head>
 
 </body>
 </html>
